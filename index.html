@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Mobile-friendly viewport -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#1c1c1e">
+    <!-- Auto-fit to device width & density -->
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#111115">
     <title>Jishnu Calculator</title>
 
     <style>
@@ -13,52 +14,64 @@
         }
 
         :root {
-            --safe-area-inset-top: env(safe-area-inset-top);
-            --safe-area-inset-bottom: env(safe-area-inset-bottom);
-            --safe-area-inset-left: env(safe-area-inset-left);
-            --safe-area-inset-right: env(safe-area-inset-right);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left: env(safe-area-inset-left, 0px);
+            --safe-right: env(safe-area-inset-right, 0px);
 
-            --bg-primary: #111115;
-            --bg-secondary: #1f1f22;
+            --bg-primary: #101016;
+            --bg-secondary: #1f1f24;
             --bg-display: #000000;
             --text-primary: #ffffff;
             --text-secondary: #ffffff;
             --accent: #0a84ff;
             --operator: #ff9500;
             --clear: #ff3b30;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            --shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
             --border-radius: 18px;
             --transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            min-height: 100vh;
             background:
-                radial-gradient(circle at top, #2b2b33 0, #111115 45%),
-                radial-gradient(circle at bottom, #181822 0, #111115 55%);
+                radial-gradient(circle at top, #2b2b35 0, #101016 45%),
+                radial-gradient(circle at bottom, #191923 0, #101016 55%);
+            color: var(--text-primary);
+
             display: flex;
             justify-content: center;
             align-items: stretch;
-            padding-top: max(10px, var(--safe-area-inset-top));
-            padding-bottom: max(10px, var(--safe-area-inset-bottom));
-            padding-left: max(8px, var(--safe-area-inset-left));
-            padding-right: max(8px, var(--safe-area-inset-right));
+
+            padding-top: calc(8px + var(--safe-top));
+            padding-bottom: calc(8px + var(--safe-bottom));
+            padding-left: calc(6px + var(--safe-left));
+            padding-right: calc(6px + var(--safe-right));
         }
 
+        /* Calculator auto scales between phones and tablets */
         .calculator {
-            background: linear-gradient(145deg, #232329, #15151a);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            width: 100%;
-            max-width: 420px;
+            width: min(100%, 480px);
+            height: min(100%, 720px);
+            max-height: 100%;
             margin: auto;
-            padding: 18px 16px 20px;
+
+            background: linear-gradient(145deg, #25252c, #16161c);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: var(--shadow);
+
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: clamp(14px, 3vh, 20px);
+            gap: clamp(10px, 2vh, 16px);
+
             animation: fadeIn 0.35s ease-out;
         }
 
@@ -69,34 +82,35 @@
 
         .header {
             text-align: center;
-            color: var(--text-primary);
-            font-size: 1.3rem;
             font-weight: 600;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.06em;
+            font-size: clamp(1.1rem, 2.6vw, 1.5rem); /* auto size */
         }
 
         .tagline {
             text-align: center;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.8rem;
-            margin-top: 4px;
+            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+            opacity: 0.65;
+            margin-top: 3px;
         }
 
         .display-container {
             background: linear-gradient(145deg, #050508, #000000);
-            border-radius: 14px;
-            padding: 10px 12px 14px;
-            min-height: 78px;
+            border-radius: 16px;
+            padding: clamp(10px, 1.8vh, 14px);
+            min-height: clamp(70px, 16vh, 110px); /* scales with height */
+
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
+
             box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .expression {
             color: #a0a0a0;
-            font-size: 0.9rem;
+            font-size: clamp(0.8rem, 1.9vw, 1rem);
             text-align: right;
             margin-bottom: 4px;
             opacity: 0;
@@ -111,11 +125,11 @@
 
         .result {
             color: var(--text-secondary);
-            font-size: 2.2rem;
             font-variant-numeric: tabular-nums;
             text-align: right;
+            line-height: 1.15;
             min-height: 1.2em;
-            line-height: 1.1;
+            font-size: clamp(1.8rem, 6.2vw, 2.8rem); /* fluid number size */
         }
 
         .display-container:focus-within {
@@ -124,28 +138,34 @@
                 0 0 0 2px rgba(10, 132, 255, 0.7);
         }
 
+        /* Buttons area flexes to fill remaining height */
         .buttons {
+            flex: 1;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(5, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-rows: repeat(5, minmax(0, 1fr));
+            gap: clamp(8px, 1.4vh, 12px);
+            align-content: stretch;
         }
 
         button {
-            background: linear-gradient(145deg, #2c2c32, #202026);
+            background: linear-gradient(145deg, #2c2c33, #202027);
             color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 14px;
-            font-size: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             font-weight: 500;
             cursor: pointer;
-            transition: var(--transition);
             touch-action: manipulation;
             position: relative;
 
-            /* touch-friendly size ~48–56px */
-            min-height: 54px;
-            min-width: 54px;
+            /* fluid button size based on viewport */
+            min-height: clamp(50px, 9vh, 68px);
+            font-size: clamp(1.05rem, 3.5vw, 1.3rem);
+
+            transition: var(--transition);
+            box-shadow:
+                0 6px 16px rgba(0, 0, 0, 0.55),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.03);
         }
 
         button::after {
@@ -153,14 +173,16 @@
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            background: radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 55%);
+            background: radial-gradient(circle at top, rgba(255,255,255,0.18), transparent 55%);
             opacity: 0;
             transition: opacity 0.15s ease-out;
         }
 
         button:hover {
             transform: translateY(-1px);
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+            box-shadow:
+                0 9px 20px rgba(0, 0, 0, 0.65),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.06);
         }
 
         button:hover::after {
@@ -170,7 +192,9 @@
         button:active {
             transform: translateY(0);
             filter: brightness(0.97);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+            box-shadow:
+                0 3px 8px rgba(0, 0, 0, 0.5),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.08);
         }
 
         .operator {
@@ -185,7 +209,7 @@
             border-color: rgba(0, 0, 0, 0.3);
             grid-column: 4;
             grid-row: 4 / 6;
-            font-size: 1.4rem;
+            font-size: clamp(1.2rem, 3.8vw, 1.5rem);
         }
 
         .zero {
@@ -212,45 +236,34 @@
             to   { opacity: 1;    transform: translateX(0); }
         }
 
-        /* Small phones portrait */
-        @media (max-width: 420px) {
+        /* Very small phones: tighten spacing a bit */
+        @media (max-width: 360px) {
             .calculator {
-                padding: 16px 12px 18px;
-                border-radius: 20px;
-            }
-            .buttons {
-                gap: 8px;
+                padding: 12px;
+                border-radius: 16px;
             }
             button {
-                min-height: 52px;
-                font-size: 1.1rem;
-            }
-            .result {
-                font-size: 2rem;
+                min-height: 48px;
+                font-size: 1rem;
             }
         }
 
-        /* Landscape: keep everything visible vertically */
-        @media (max-width: 800px) and (orientation: landscape) {
-            body {
-                align-items: center;
-                padding-top: max(6px, var(--safe-area-inset-top));
-                padding-bottom: max(6px, var(--safe-area-inset-bottom));
-            }
+        /* Landscape: keep content centered and fully visible */
+        @media (orientation: landscape) and (max-height: 500px) {
             .calculator {
-                max-height: 100vh;
-                padding: 12px;
-                gap: 10px;
+                height: 100%;
+                max-height: 100%;
+                padding: 10px;
             }
             .display-container {
-                min-height: 64px;
+                min-height: 60px;
             }
             .result {
-                font-size: 1.8rem;
+                font-size: clamp(1.4rem, 4.2vw, 2.1rem);
             }
             button {
-                min-height: 46px;
-                font-size: 1rem;
+                min-height: 44px;
+                font-size: clamp(0.95rem, 2.6vw, 1.1rem);
             }
         }
     </style>
@@ -259,7 +272,7 @@
     <div class="calculator">
         <div>
             <div class="header">Jishnu Calculator</div>
-            <div class="tagline">Mobile friendly • v1.0</div>
+            <div class="tagline">Auto-fit • Any screen</div>
         </div>
 
         <div class="display-container" tabindex="0">
@@ -454,7 +467,7 @@
             }
         });
 
-        // Init audio on first tap/click (required by browsers)
+        // Init audio on first user interaction
         document.addEventListener("click", initAudio, { once: true });
     </script>
 </body>
