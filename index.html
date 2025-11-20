@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Auto-fit to device width & density -->
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#111115">
@@ -55,7 +54,6 @@
             padding-right: calc(6px + var(--safe-right));
         }
 
-        /* Calculator auto scales between phones and tablets */
         .calculator {
             width: min(100%, 480px);
             height: min(100%, 720px);
@@ -80,25 +78,93 @@
             to   { opacity: 1; transform: translateY(0)   scale(1); }
         }
 
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+        }
+
         .header {
-            text-align: center;
             font-weight: 600;
             letter-spacing: 0.06em;
-            font-size: clamp(1.1rem, 2.6vw, 1.5rem); /* auto size */
+            font-size: clamp(1.1rem, 2.6vw, 1.5rem);
         }
 
         .tagline {
-            text-align: center;
             font-size: clamp(0.7rem, 1.8vw, 0.85rem);
             opacity: 0.65;
             margin-top: 3px;
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.15);
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .sound-toggle label {
+            cursor: pointer;
+        }
+
+        .switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #555;
+            transition: 0.2s;
+            border-radius: 999px;
+        }
+
+        .slider:before {
+            content: "";
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.2s;
+            border-radius: 50%;
+        }
+
+        .switch input:checked + .slider {
+            background-color: #0a84ff;
+        }
+
+        .switch input:checked + .slider:before {
+            transform: translateX(18px);
         }
 
         .display-container {
             background: linear-gradient(145deg, #050508, #000000);
             border-radius: 16px;
             padding: clamp(10px, 1.8vh, 14px);
-            min-height: clamp(70px, 16vh, 110px); /* scales with height */
+            min-height: clamp(70px, 16vh, 110px);
 
             display: flex;
             flex-direction: column;
@@ -129,7 +195,7 @@
             text-align: right;
             line-height: 1.15;
             min-height: 1.2em;
-            font-size: clamp(1.8rem, 6.2vw, 2.8rem); /* fluid number size */
+            font-size: clamp(1.8rem, 6.2vw, 2.8rem);
         }
 
         .display-container:focus-within {
@@ -138,7 +204,6 @@
                 0 0 0 2px rgba(10, 132, 255, 0.7);
         }
 
-        /* Buttons area flexes to fill remaining height */
         .buttons {
             flex: 1;
             display: grid;
@@ -158,7 +223,6 @@
             touch-action: manipulation;
             position: relative;
 
-            /* fluid button size based on viewport */
             min-height: clamp(50px, 9vh, 68px);
             font-size: clamp(1.05rem, 3.5vw, 1.3rem);
 
@@ -236,7 +300,6 @@
             to   { opacity: 1;    transform: translateX(0); }
         }
 
-        /* Very small phones: tighten spacing a bit */
         @media (max-width: 360px) {
             .calculator {
                 padding: 12px;
@@ -248,7 +311,6 @@
             }
         }
 
-        /* Landscape: keep content centered and fully visible */
         @media (orientation: landscape) and (max-height: 500px) {
             .calculator {
                 height: 100%;
@@ -266,13 +328,96 @@
                 font-size: clamp(0.95rem, 2.6vw, 1.1rem);
             }
         }
+
+        /* First-launch sound permission modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+
+        .modal {
+            background: #1c1c22;
+            border-radius: 18px;
+            padding: 16px 18px 14px;
+            width: 86%;
+            max-width: 360px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.75);
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .modal-text {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal-btn.secondary {
+            background: transparent;
+            color: #d1d1d6;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+
+        .modal-btn.primary {
+            background: #0a84ff;
+            color: white;
+        }
     </style>
 </head>
 <body>
+    <!-- First-time sound permission modal -->
+    <div class="modal-backdrop" id="sound-modal">
+        <div class="modal">
+            <div class="modal-title">Enable button sound?</div>
+            <div class="modal-text">
+                Jishnu Calculator can play a subtle sound when you tap the buttons.
+                You can change this later from the sound toggle at the top.
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn secondary" id="sound-disable-btn">Disable</button>
+                <button class="modal-btn primary" id="sound-enable-btn">Enable</button>
+            </div>
+        </div>
+    </div>
+
     <div class="calculator">
-        <div>
-            <div class="header">Jishnu Calculator</div>
-            <div class="tagline">Auto-fit • Any screen</div>
+        <div class="header-row">
+            <div class="header-title">
+                <div class="header">Jishnu Calculator</div>
+                <div class="tagline">Auto-fit • v1.0</div>
+            </div>
+
+            <div class="sound-toggle">
+                <span>Sound</span>
+                <label class="switch">
+                    <input type="checkbox" id="sound-toggle-input">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
         <div class="display-container" tabindex="0">
@@ -309,17 +454,31 @@
     <script>
         const expressionEl = document.getElementById("expression");
         const resultEl = document.getElementById("result");
+        const soundModal = document.getElementById("sound-modal");
+        const soundEnableBtn = document.getElementById("sound-enable-btn");
+        const soundDisableBtn = document.getElementById("sound-disable-btn");
+        const soundToggleInput = document.getElementById("sound-toggle-input");
+
         let currentExpression = "0";
         let displayValue = "0";
         let hasResult = false;
         let audioContext;
+        let soundEnabled = true; // default, overridden by stored value
+
+        const SOUND_KEY = "jishnuCalcSound";
 
         function initAudio() {
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            if (!soundEnabled) return;
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
         }
 
         function playSound(frequency = 800, duration = 0.1) {
+            if (!soundEnabled) return;
             if (!audioContext) initAudio();
+            if (!audioContext) return; // safety if blocked
+
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             oscillator.connect(gainNode);
@@ -447,6 +606,7 @@
             }
         }
 
+        // Keyboard support (desktop / emulator)
         document.addEventListener("keydown", function (event) {
             const key = event.key;
             if ((key >= "0" && key <= "9") || key === ".") {
@@ -467,8 +627,66 @@
             }
         });
 
-        // Init audio on first user interaction
-        document.addEventListener("click", initAudio, { once: true });
+        // ----- Sound preference handling -----
+
+        function applySoundPreference(fromStorage) {
+            soundToggleInput.checked = soundEnabled;
+            if (!fromStorage && soundEnabled) {
+                // only initialize audio when user enables it via UI
+                document.addEventListener("click", initAudio, { once: true });
+            }
+        }
+
+        function saveSoundPreference() {
+            localStorage.setItem(SOUND_KEY, soundEnabled ? "on" : "off");
+        }
+
+        function showSoundModal() {
+            soundModal.style.display = "flex";
+        }
+
+        function hideSoundModal() {
+            soundModal.style.display = "none";
+        }
+
+        // First-load logic
+        window.addEventListener("load", () => {
+            const stored = localStorage.getItem(SOUND_KEY);
+            if (stored === null) {
+                // First time: ask user
+                soundEnabled = true; // default suggestion
+                applySoundPreference(true);
+                showSoundModal();
+            } else {
+                soundEnabled = stored === "on";
+                applySoundPreference(true);
+                if (soundEnabled) {
+                    document.addEventListener("click", initAudio, { once: true });
+                }
+            }
+        });
+
+        soundEnableBtn.addEventListener("click", () => {
+            soundEnabled = true;
+            saveSoundPreference();
+            applySoundPreference(false);
+            hideSoundModal();
+        });
+
+        soundDisableBtn.addEventListener("click", () => {
+            soundEnabled = false;
+            saveSoundPreference();
+            applySoundPreference(false);
+            hideSoundModal();
+        });
+
+        soundToggleInput.addEventListener("change", () => {
+            soundEnabled = soundToggleInput.checked;
+            saveSoundPreference();
+            if (soundEnabled) {
+                document.addEventListener("click", initAudio, { once: true });
+            }
+        });
     </script>
 </body>
 </html>
