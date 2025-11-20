@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Mobile-friendly viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1c1c1e">
+    <title>Jishnu Calculator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --safe-area-inset-left: env(safe-area-inset-left);
+            --safe-area-inset-right: env(safe-area-inset-right);
+
+            --bg-primary: #111115;
+            --bg-secondary: #1f1f22;
+            --bg-display: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #ffffff;
+            --accent: #0a84ff;
+            --operator: #ff9500;
+            --clear: #ff3b30;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            --border-radius: 18px;
+            --transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top, #2b2b33 0, #111115 45%),
+                radial-gradient(circle at bottom, #181822 0, #111115 55%);
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            padding-top: max(10px, var(--safe-area-inset-top));
+            padding-bottom: max(10px, var(--safe-area-inset-bottom));
+            padding-left: max(8px, var(--safe-area-inset-left));
+            padding-right: max(8px, var(--safe-area-inset-right));
+        }
+
+        .calculator {
+            background: linear-gradient(145deg, #232329, #15151a);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 420px;
+            margin: auto;
+            padding: 18px 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            animation: fadeIn 0.35s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0)   scale(1); }
+        }
+
+        .header {
+            text-align: center;
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+        }
+
+        .tagline {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .display-container {
+            background: linear-gradient(145deg, #050508, #000000);
+            border-radius: 14px;
+            padding: 10px 12px 14px;
+            min-height: 78px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .expression {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            text-align: right;
+            margin-bottom: 4px;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: var(--transition);
+        }
+
+        .expression.show {
+            opacity: 0.95;
+            transform: translateY(0);
+        }
+
+        .result {
+            color: var(--text-secondary);
+            font-size: 2.2rem;
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+            min-height: 1.2em;
+            line-height: 1.1;
+        }
+
+        .display-container:focus-within {
+            box-shadow:
+                inset 0 1px 3px rgba(255, 255, 255, 0.06),
+                0 0 0 2px rgba(10, 132, 255, 0.7);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2c2c32, #202026);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            touch-action: manipulation;
+            position: relative;
+
+            /* touch-friendly size ~48–56px */
+            min-height: 54px;
+            min-width: 54px;
+        }
+
+        button::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(circle at top, rgba(255, 255, 255, 0.18), transparent 55%);
+            opacity: 0;
+            transition: opacity 0.15s ease-out;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+        }
+
+        button:hover::after {
+            opacity: 1;
+        }
+
+        button:active {
+            transform: translateY(0);
+            filter: brightness(0.97);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
+        }
+
+        .operator {
+            background: linear-gradient(145deg, #ff9f1a, #ff7a00);
+            color: var(--text-secondary);
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .equals {
+            background: linear-gradient(145deg, #0a84ff, #0060d6);
+            color: var(--text-secondary);
+            border-color: rgba(0, 0, 0, 0.3);
+            grid-column: 4;
+            grid-row: 4 / 6;
+            font-size: 1.4rem;
+        }
+
+        .zero {
+            grid-column: 1 / 3;
+            grid-row: 5;
+        }
+
+        .clear {
+            background: linear-gradient(145deg, #ff4b4b, #d62525);
+            color: var(--text-secondary);
+        }
+
+        .backspace {
+            background: linear-gradient(145deg, #ffd44f, #ffb300);
+            color: #1c1c1e;
+        }
+
+        .display-update {
+            animation: slideInDisplay 0.18s ease-out;
+        }
+
+        @keyframes slideInDisplay {
+            from { opacity: 0.85; transform: translateX(-4px); }
+            to   { opacity: 1;    transform: translateX(0); }
+        }
+
+        /* Small phones portrait */
+        @media (max-width: 420px) {
+            .calculator {
+                padding: 16px 12px 18px;
+                border-radius: 20px;
+            }
+            .buttons {
+                gap: 8px;
+            }
+            button {
+                min-height: 52px;
+                font-size: 1.1rem;
+            }
+            .result {
+                font-size: 2rem;
+            }
+        }
+
+        /* Landscape: keep everything visible vertically */
+        @media (max-width: 800px) and (orientation: landscape) {
+            body {
+                align-items: center;
+                padding-top: max(6px, var(--safe-area-inset-top));
+                padding-bottom: max(6px, var(--safe-area-inset-bottom));
+            }
+            .calculator {
+                max-height: 100vh;
+                padding: 12px;
+                gap: 10px;
+            }
+            .display-container {
+                min-height: 64px;
+            }
+            .result {
+                font-size: 1.8rem;
+            }
+            button {
+                min-height: 46px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div>
+            <div class="header">Jishnu Calculator</div>
+            <div class="tagline">Mobile friendly • v1.0</div>
+        </div>
+
+        <div class="display-container" tabindex="0">
+            <div class="expression" id="expression"></div>
+            <div class="result" id="result">0</div>
+        </div>
+
+        <div class="buttons">
+            <button class="clear" onclick="playSound(); clearDisplay()">C</button>
+            <button class="backspace" onclick="playSound(); deleteLast()">⌫</button>
+            <button class="operator" onclick="playOperatorSound(); appendToDisplay('/')">/</button>
+            <button class="operator" onclick="playOperatorSound(); appendToDisplay('*')">×</button>
+
+            <button onclick="playSound(); appendToDisplay('7')">7</button>
+            <button onclick="playSound(); appendToDisplay('8')">8</button>
+            <button onclick="playSound(); appendToDisplay('9')">9</button>
+            <button class="operator" onclick="playOperatorSound(); appendToDisplay('-')">-</button>
+
+            <button onclick="playSound(); appendToDisplay('4')">4</button>
+            <button onclick="playSound(); appendToDisplay('5')">5</button>
+            <button onclick="playSound(); appendToDisplay('6')">6</button>
+            <button class="operator" onclick="playOperatorSound(); appendToDisplay('+')">+</button>
+
+            <button onclick="playSound(); appendToDisplay('1')">1</button>
+            <button onclick="playSound(); appendToDisplay('2')">2</button>
+            <button onclick="playSound(); appendToDisplay('3')">3</button>
+            <button class="equals" onclick="playEqualsSound(); calculate()">=</button>
+
+            <button class="zero" onclick="playSound(); appendToDisplay('0')">0</button>
+            <button onclick="playSound(); appendToDisplay('.')">.</button>
+        </div>
+    </div>
+
+    <script>
+        const expressionEl = document.getElementById("expression");
+        const resultEl = document.getElementById("result");
+        let currentExpression = "0";
+        let displayValue = "0";
+        let hasResult = false;
+        let audioContext;
+
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(frequency = 800, duration = 0.1) {
+            if (!audioContext) initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.frequency.value = frequency;
+            oscillator.type = "sine";
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(
+                0.01,
+                audioContext.currentTime + duration
+            );
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function playOperatorSound() {
+            playSound(600, 0.15);
+        }
+        function playEqualsSound() {
+            playSound(1000, 0.2);
+        }
+        function playClearSound() {
+            playSound(400, 0.1);
+        }
+
+        function updateDisplay() {
+            resultEl.textContent = displayValue;
+            resultEl.classList.add("display-update");
+            setTimeout(() => resultEl.classList.remove("display-update"), 200);
+        }
+
+        function showResultWithExpression(calcExpression, result) {
+            expressionEl.textContent = calcExpression.replace(/×/g, "×");
+            expressionEl.classList.add("show");
+            displayValue = result;
+            hasResult = true;
+            updateDisplay();
+        }
+
+        function appendToDisplay(value) {
+            if (hasResult) {
+                clearDisplay();
+            }
+            if (value === "*") {
+                currentExpression += "*";
+                displayValue += (displayValue === "0" ? "" : " ") + "×";
+                playOperatorSound();
+            } else {
+                if (
+                    displayValue === "0" &&
+                    !["+", "-", "*", "/", "×"].includes(value)
+                ) {
+                    displayValue = value;
+                    currentExpression = value;
+                } else {
+                    displayValue += value;
+                    currentExpression += value;
+                }
+                if (["+", "-", "*", "/", "×"].includes(value)) {
+                    playOperatorSound();
+                } else {
+                    playSound();
+                }
+            }
+            if (["+", "-", "*", "/", "×"].includes(value)) {
+                displayValue += " ";
+            }
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            displayValue = "0";
+            currentExpression = "0";
+            hasResult = false;
+            expressionEl.classList.remove("show");
+            updateDisplay();
+            playClearSound();
+        }
+
+        function deleteLast() {
+            if (hasResult) {
+                clearDisplay();
+                return;
+            }
+            if (displayValue.length > 1) {
+                displayValue = displayValue.slice(0, -1);
+                currentExpression = currentExpression.slice(0, -1);
+                if (
+                    ["+", "-", "*", "/", "×", " "].includes(
+                        displayValue.slice(-1)
+                    )
+                ) {
+                    displayValue = displayValue.slice(0, -2);
+                    currentExpression = currentExpression.slice(0, -1);
+                }
+            } else {
+                displayValue = "0";
+                currentExpression = "0";
+            }
+            updateDisplay();
+            playSound(500, 0.08);
+        }
+
+        function calculate() {
+            if (hasResult) {
+                currentExpression = displayValue;
+                hasResult = false;
+                expressionEl.classList.remove("show");
+            }
+            try {
+                const evalExpression = currentExpression.replace(/×/g, "*");
+                let result = eval(evalExpression);
+                if (!isFinite(result)) {
+                    throw new Error("Invalid");
+                }
+                result = result.toString().includes(".")
+                    ? parseFloat(result.toFixed(10)).toString()
+                    : result.toString();
+                showResultWithExpression(currentExpression, result);
+                playEqualsSound();
+            } catch (error) {
+                resultEl.textContent = "Error";
+                playSound(200, 0.3);
+                setTimeout(clearDisplay, 1500);
+            }
+        }
+
+        document.addEventListener("keydown", function (event) {
+            const key = event.key;
+            if ((key >= "0" && key <= "9") || key === ".") {
+                appendToDisplay(key);
+                event.preventDefault();
+            } else if (["+", "-", "*", "/"].includes(key)) {
+                appendToDisplay(key);
+                event.preventDefault();
+            } else if (key === "Enter" || key === "=") {
+                calculate();
+                event.preventDefault();
+            } else if (key.toLowerCase() === "c" || key === "Escape") {
+                clearDisplay();
+                event.preventDefault();
+            } else if (key === "Backspace") {
+                deleteLast();
+                event.preventDefault();
+            }
+        });
+
+        // Init audio on first tap/click (required by browsers)
+        document.addEventListener("click", initAudio, { once: true });
+    </script>
+</body>
+</html>
