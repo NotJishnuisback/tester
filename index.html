@@ -7,9 +7,7 @@
     <title>Jishnu Calculator</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         :root {
             --bg: radial-gradient(circle at top, #1d1f2a 0, #05060b 50%, #000000 100%);
@@ -160,6 +158,44 @@
             to   { transform: translateX(0); opacity: 1; }
         }
 
+        /* Mode tabs: Standard / AI Chat */
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 999px;
+            padding: 3px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            border-radius: 999px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            padding: 6px 10px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .mode-tab.active {
+            background: #0a84ff;
+            color: #ffffff;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.7);
+        }
+
+        .panel {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .panel.active {
+            display: flex;
+        }
+
         .pad-shell {
             flex: 1;
             display: flex;
@@ -184,6 +220,8 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* STANDARD KEYPAD */
 
         .buttons {
             flex: 1;
@@ -251,18 +289,9 @@
             filter: brightness(0.96);
         }
 
-        .btn-clear {
-            background: linear-gradient(145deg, #ff5b5b, #b6181a);
-        }
-
-        .btn-back {
-            background: linear-gradient(145deg, #ffd95a, #ffb300);
-            color: #171717;
-        }
-
-        .btn-op {
-            background: linear-gradient(145deg, #ffb547, #ff7a00);
-        }
+        .btn-clear { background: linear-gradient(145deg, #ff5b5b, #b6181a); }
+        .btn-back  { background: linear-gradient(145deg, #ffd95a, #ffb300); color: #171717; }
+        .btn-op    { background: linear-gradient(145deg, #ffb547, #ff7a00); }
 
         .btn-equals {
             background: linear-gradient(160deg, var(--accent-soft), #0059d1);
@@ -274,6 +303,84 @@
         .btn-zero {
             grid-column: 1 / 4;
             grid-row: 5 / 6;
+        }
+
+        /* AI CHAT PANEL */
+
+        .chat-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .chat-window {
+            flex: 1;
+            background: radial-gradient(circle at top left, #191b26, #05060b);
+            border-radius: 18px;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow:
+                inset 0 1px 2px rgba(255,255,255,0.04),
+                0 10px 24px rgba(0,0,0,0.85);
+            overflow-y: auto;
+        }
+
+        .chat-msg {
+            max-width: 85%;
+            margin-bottom: 8px;
+            padding: 8px 11px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.35;
+            word-wrap: break-word;
+            white-space: pre-line;
+        }
+
+        .chat-msg.user {
+            margin-left: auto;
+            background: linear-gradient(145deg, #2f9bff, #0060d6);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        }
+
+        .chat-msg.bot {
+            margin-right: auto;
+            background: linear-gradient(145deg, #262a35, #171922);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(0,0,0,0.45);
+            color: var(--text-main);
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255,255,255,0.35);
+        }
+
+        .chat-send {
+            border-radius: 999px;
+            padding: 8px 14px;
+            border: none;
+            background: linear-gradient(145deg, #3ba8ff, #0059d1);
+            color: #ffffff;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.6);
+            cursor: pointer;
         }
 
         @media (max-width: 360px) {
@@ -294,11 +401,11 @@
             <div class="header-row">
                 <div class="header-title">
                     <div class="title">Jishnu Calculator</div>
-                    <div class="subtitle">Clean · Fast · Minimal</div>
+                    <div class="subtitle">Standard · AI Math Chat</div>
                 </div>
                 <div class="badge">
                     <span class="badge-dot"></span>
-                    <span>Standard mode</span>
+                    <span id="mode-label">Standard</span>
                 </div>
             </div>
 
@@ -307,45 +414,76 @@
                 <div class="display-result" id="result">0</div>
             </div>
 
-            <div class="pad-shell">
-                <div class="row-top">
-                    <div class="chip">Tap or use keyboard 0‑9, +‑*/ and Enter</div>
-                </div>
+            <div class="mode-tabs">
+                <button id="tab-standard" class="mode-tab active">Standard</button>
+                <button id="tab-chat" class="mode-tab">AI Chat</button>
+            </div>
 
-                <div class="buttons">
-                    <!-- Row 1 -->
-                    <button class="btn-clear" onclick="playClick(420); clearDisplay()">C</button>
-                    <button class="btn-back" onclick="playClick(520); backspace()">⌫</button>
-                    <button class="btn-op" onclick="playClick(620); appendOp('/')">÷</button>
-                    <button class="btn-op" onclick="playClick(620); appendOp('*')">×</button>
+            <!-- STANDARD MODE -->
+            <div id="panel-standard" class="panel active">
+                <div class="pad-shell">
+                    <div class="row-top">
+                        <div class="chip">Tap or use keyboard 0‑9, +‑*/ and Enter</div>
+                    </div>
 
-                    <!-- Row 2 -->
-                    <button onclick="playClick(); appendDigit('7')">7</button>
-                    <button onclick="playClick(); appendDigit('8')">8</button>
-                    <button onclick="playClick(); appendDigit('9')">9</button>
-                    <button class="btn-op" onclick="playClick(620); appendOp('-')">−</button>
+                    <div class="buttons">
+                        <!-- Row 1 -->
+                        <button class="btn-clear" onclick="playClick(420); clearDisplay()">C</button>
+                        <button class="btn-back" onclick="playClick(520); backspace()">⌫</button>
+                        <button class="btn-op" onclick="playClick(620); appendOp('/')">÷</button>
+                        <button class="btn-op" onclick="playClick(620); appendOp('*')">×</button>
 
-                    <!-- Row 3 -->
-                    <button onclick="playClick(); appendDigit('4')">4</button>
-                    <button onclick="playClick(); appendDigit('5')">5</button>
-                    <button onclick="playClick(); appendDigit('6')">6</button>
-                    <button class="btn-op" onclick="playClick(620); appendOp('+')">+</button>
+                        <!-- Row 2 -->
+                        <button onclick="playClick(); appendDigit('7')">7</button>
+                        <button onclick="playClick(); appendDigit('8')">8</button>
+                        <button onclick="playClick(); appendDigit('9')">9</button>
+                        <button class="btn-op" onclick="playClick(620); appendOp('-')">−</button>
 
-                    <!-- Row 4 -->
-                    <button onclick="playClick(); appendDigit('1')">1</button>
-                    <button onclick="playClick(); appendDigit('2')">2</button>
-                    <button onclick="playClick(); appendDigit('3')">3</button>
-                    <button onclick="playClick(); appendDot()">.</button>
+                        <!-- Row 3 -->
+                        <button onclick="playClick(); appendDigit('4')">4</button>
+                        <button onclick="playClick(); appendDigit('5')">5</button>
+                        <button onclick="playClick(); appendDigit('6')">6</button>
+                        <button class="btn-op" onclick="playClick(620); appendOp('+')">+</button>
 
-                    <!-- Row 5 -->
-                    <button class="btn-zero" onclick="playClick(); appendDigit('0')">0</button>
-                    <button class="btn-equals" onclick="playClick(760); calculate()">=</button>
+                        <!-- Row 4 -->
+                        <button onclick="playClick(); appendDigit('1')">1</button>
+                        <button onclick="playClick(); appendDigit('2')">2</button>
+                        <button onclick="playClick(); appendDigit('3')">3</button>
+                        <button onclick="playClick(); appendDot()">.</button>
+
+                        <!-- Row 5 -->
+                        <button class="btn-zero" onclick="playClick(); appendDigit('0')">0</button>
+                        <button class="btn-equals" onclick="playClick(760); calculate()">=</button>
+                    </div>
                 </div>
             </div>
+
+            <!-- AI CHAT MODE -->
+            <div id="panel-chat" class="panel">
+                <div class="chat-wrapper">
+                    <div class="row-top">
+                        <div class="chip">
+                            Ask like: “what is 12 + 7?”, “30 divided by 6”, “5 into 9 minus 3”.
+                        </div>
+                    </div>
+
+                    <div id="chat-window" class="chat-window"></div>
+
+                    <div class="chat-input-row">
+                        <input id="chat-input" class="chat-input"
+                               type="text"
+                               placeholder="Type a math question…"
+                               autocomplete="off" />
+                        <button class="chat-send" id="chat-send">Send</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
+        // ==== Standard calculator logic ====
         const expressionEl = document.getElementById("expression");
         const resultEl = document.getElementById("result");
 
@@ -451,11 +589,19 @@
             updateResultDisplay();
         }
 
+        function safeEvalExpression(expr) {
+            if (!/^[0-9+\-*/().\s]+$/.test(expr)) {
+                throw new Error("Unsafe expression");
+            }
+            // eslint-disable-next-line no-new-func
+            return Function("return " + expr)();
+        }
+
         function calculate() {
             if (!currentExpression) return;
             try {
                 const expr = currentExpression;
-                const value = Function("return " + expr)();
+                const value = safeEvalExpression(expr);
                 if (!isFinite(value)) throw new Error("Invalid");
                 const resultStr = value.toString().includes(".")
                     ? parseFloat(value.toFixed(10)).toString()
@@ -472,7 +618,21 @@
             }
         }
 
+        // ==== Keyboard: ignore when chat is active or input focused ====
         document.addEventListener("keydown", (event) => {
+            const activeTag = document.activeElement?.tagName;
+            const isTypingField =
+                activeTag === "INPUT" ||
+                activeTag === "TEXTAREA" ||
+                document.activeElement?.isContentEditable;
+
+            const chatPanelActive =
+                document.getElementById("panel-chat")?.classList.contains("active");
+
+            if (isTypingField || chatPanelActive) {
+                return; // let chat input handle keys
+            }
+
             const k = event.key;
             if (k >= "0" && k <= "9") {
                 appendDigit(k);
@@ -496,6 +656,128 @@
         });
 
         document.addEventListener("click", () => ensureAudio(), { once: true });
+
+        // ==== Mode switching ====
+        const tabStandard = document.getElementById("tab-standard");
+        const tabChat = document.getElementById("tab-chat");
+        const panelStandard = document.getElementById("panel-standard");
+        const panelChat = document.getElementById("panel-chat");
+        const modeLabel = document.getElementById("mode-label");
+
+        function setMode(mode) {
+            if (mode === "standard") {
+                tabStandard.classList.add("active");
+                tabChat.classList.remove("active");
+                panelStandard.classList.add("active");
+                panelChat.classList.remove("active");
+                modeLabel.textContent = "Standard";
+            } else {
+                tabChat.classList.add("active");
+                tabStandard.classList.remove("active");
+                panelChat.classList.add("active");
+                panelStandard.classList.remove("active");
+                modeLabel.textContent = "AI Chat";
+            }
+        }
+
+        tabStandard.addEventListener("click", () => setMode("standard"));
+        tabChat.addEventListener("click", () => setMode("chat"));
+
+        // ==== AI Chat math solver ====
+        const chatWindow = document.getElementById("chat-window");
+        const chatInput = document.getElementById("chat-input");
+        const chatSend = document.getElementById("chat-send");
+
+        function addChatBubble(text, isUser) {
+            const div = document.createElement("div");
+            div.classList.add("chat-msg");
+            div.classList.add(isUser ? "user" : "bot");
+            div.textContent = text;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function voiceTextToExpression(text) {
+            if (!text) return "";
+
+            let t = " " + text.toLowerCase() + " ";
+
+            t = t.replace(/ plus | add /g, " + ");
+            t = t.replace(/ minus | subtract /g, " - ");
+            t = t.replace(/ into | multiplied by | multiply by | times /g, " * ");
+            t = t.replace(/ divided by | divide by | over /g, " / ");
+            t = t.replace(/ point /g, ".");
+
+            t = t.replace(/ (please|equals|equal|calculate|answer|and|solve|for|is) /g, " ");
+
+            const map = {
+                " zero ": " 0 ", " one ": " 1 ", " two ": " 2 ", " three ": " 3 ", " four ": " 4 ",
+                " five ": " 5 ", " six ": " 6 ", " seven ": " 7 ", " eight ": " 8 ", " nine ": " 9 ",
+                " ten ": " 10 ", " eleven ": " 11 ", " twelve ": " 12 ", " thirteen ": " 13 ",
+                " fourteen ": " 14 ", " fifteen ": " 15 ", " sixteen ": " 16 ", " seventeen ": " 17 ",
+                " eighteen ": " 18 ", " nineteen ": " 19 ", " twenty ": " 20 ",
+                " thirty ": " 30 ", " forty ": " 40 ", " fifty ": " 50 ",
+                " sixty ": " 60 ", " seventy ": " 70 ", " eighty ": " 80 ", " ninety ": " 90 "
+            };
+            for (const [k, v] of Object.entries(map)) {
+                t = t.replace(new RegExp(k, "g"), v);
+            }
+
+            t = t.replace(/\s+/g, " ").trim();
+
+            if (!/^[0-9+\-*/().\s]+$/.test(t)) return "";
+            return t;
+        }
+
+        function answerMathQuestion(raw) {
+            const exprFromWords = voiceTextToExpression(raw);
+            let candidate = exprFromWords;
+
+            if (!candidate) {
+                const match = raw.match(/[0-9+\-*/().\s]+/g);
+                if (match) candidate = match.join("").trim();
+            }
+
+            if (!candidate) {
+                return "I couldn’t find a math expression. Try like “12 + 7” or “30 divided by 6”.";
+            }
+
+            try {
+                const value = safeEvalExpression(candidate);
+                if (!isFinite(value)) throw new Error("Invalid");
+                const pretty = candidate.replace(/\*/g, "×").replace(/\//g, "÷");
+                const resultStr = value.toString().includes(".")
+                    ? parseFloat(value.toFixed(10)).toString()
+                    : value.toString();
+                return `Expression: ${pretty}\nAnswer: ${resultStr}`;
+            } catch (e) {
+                return "That expression looks invalid. Check your numbers and operators and try again.";
+            }
+        }
+
+        function handleChatSend() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            addChatBubble(text, true);
+            chatInput.value = "";
+
+            const reply = answerMathQuestion(text);
+            addChatBubble(reply, false);
+        }
+
+        chatSend.addEventListener("click", handleChatSend);
+        chatInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                handleChatSend();
+                e.preventDefault();
+            }
+        });
+
+        // Initial bot greeting
+        addChatBubble(
+            "Hi, I’m Jishnu Math AI. Ask me any basic arithmetic question like “5 + 9 × 3” or “twenty five divided by five”.",
+            false
+        );
     </script>
 </body>
 </html>
