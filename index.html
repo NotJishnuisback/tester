@@ -233,7 +233,6 @@
             box-shadow: 0 6px 14px rgba(0,0,0,0.5);
         }
 
-        /* Panels */
         .panel {
             flex: 1;
             display: none;
@@ -244,7 +243,7 @@
             display: flex;
         }
 
-        /* Standard buttons panel */
+        /* Standard panel */
         .buttons {
             flex: 1;
             display: grid;
@@ -341,7 +340,7 @@
             to   { opacity: 1;    transform: translateX(0); }
         }
 
-        /* Voice AI panel */
+        /* Voice panel layout */
         .voice-panel-content {
             flex: 1;
             display: flex;
@@ -350,9 +349,39 @@
             margin-top: 8px;
         }
 
+        .voice-top-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .voice-hint {
             font-size: 0.82rem;
             opacity: 0.8;
+        }
+
+        .voice-lang-select {
+            align-self: flex-start;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.18);
+            font-size: 0.8rem;
+        }
+
+        .voice-lang-select label {
+            opacity: 0.8;
+        }
+
+        .voice-lang-select select {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 0.8rem;
+            outline: none;
         }
 
         .voice-display {
@@ -437,7 +466,7 @@
             }
         }
 
-        /* First-launch sound permission modal (unchanged from previous version) */
+        /* First-launch sound permission modal */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -570,9 +599,27 @@
         <!-- Voice AI calculator panel -->
         <div class="panel" id="panel-voice">
             <div class="voice-panel-content">
-                <div class="voice-hint">
-                    Tap the mic and say things like:
-                    “twelve plus five”, “twenty divided by four”, or “nine times three”.
+                <div class="voice-top-row">
+                    <div class="voice-hint">
+                        Say things like: “twelve plus five”, “twenty divided by four”, or the
+                        same pattern in your own language.
+                    </div>
+
+                    <div class="voice-lang-select">
+                        <label for="voice-lang">Language</label>
+                        <select id="voice-lang">
+                            <option value="auto">Auto (device)</option>
+                            <option value="en-US">English (US)</option>
+                            <option value="en-GB">English (UK)</option>
+                            <option value="hi-IN">Hindi (India)</option>
+                            <option value="es-ES">Spanish (Spain)</option>
+                            <option value="es-MX">Spanish (Mexico)</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="pt-BR">Portuguese (Brazil)</option>
+                            <option value="id-ID">Indonesian</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="voice-display">
@@ -587,7 +634,7 @@
                         <span>🎤</span><span id="voice-mic-text">Start listening</span>
                     </button>
                     <div class="voice-status" id="voice-status">
-                        Voice calculator uses device speech recognition when available.
+                        Voice calculator listens ~3–4 seconds, then processes what you said.
                     </div>
                 </div>
             </div>
@@ -613,6 +660,7 @@
         const voiceMicBtn = document.getElementById("voice-mic-btn");
         const voiceMicText = document.getElementById("voice-mic-text");
         const voiceStatus = document.getElementById("voice-status");
+        const voiceLangSelect = document.getElementById("voice-lang");
 
         let currentExpression = "0";
         let displayValue = "0";
@@ -622,16 +670,15 @@
 
         const SOUND_KEY = "jishnuCalcSound";
 
-        // Web Speech API / Voice
         const SpeechRecognition =
             window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         let listening = false;
+        let listenTimeoutId = null;
         const speechSupported = typeof SpeechRecognition !== "undefined";
 
         if (speechSupported) {
             recognition = new SpeechRecognition();
-            recognition.lang = "en-US";
             recognition.continuous = false;
             recognition.interimResults = false;
         } else {
@@ -812,9 +859,7 @@
         function saveSoundPreference() {
             try {
                 localStorage.setItem(SOUND_KEY, soundEnabled ? "on" : "off");
-            } catch (e) {
-                // ignore storage errors
-            }
+            } catch (e) {}
         }
 
         function showSoundModal() {
@@ -887,6 +932,14 @@
         tabVoice.addEventListener("click", () => setMode("voice"));
 
         // ----- Voice AI calculator -----
+        function getSelectedRecognitionLang() {
+            const value = voiceLangSelect ? voiceLangSelect.value : "auto";
+            if (value === "auto") {
+                return navigator.language || "en-US";
+            }
+            return value;
+        }
+
         function normalizeTranscriptToExpression(text) {
             let expr = text.toLowerCase();
 
@@ -907,16 +960,25 @@
 
             if (!listening) {
                 try {
+                    recognition.lang = getSelectedRecognitionLang();
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+
                     recognition.start();
                     listening = true;
                     voiceMicBtn.classList.add("listening");
                     voiceMicText.textContent = "Listening…";
-                    voiceStatus.textContent = "Speak your expression, then pause.";
+                    voiceStatus.textContent = "Listening for about 3–4 seconds…";
+
+                    if (listenTimeoutId) clearTimeout(listenTimeoutId);
+                    listenTimeoutId = setTimeout(() => {
+                        try { recognition.stop(); } catch (e) {}
+                    }, 3500);
                 } catch (e) {
                     voiceStatus.textContent = "Could not start microphone.";
                 }
             } else {
-                recognition.stop();
+                try { recognition.stop(); } catch (e) {}
             }
         }
 
@@ -936,6 +998,10 @@
                 listening = false;
                 voiceMicBtn.classList.remove("listening");
                 voiceMicText.textContent = "Start listening";
+                if (listenTimeoutId) {
+                    clearTimeout(listenTimeoutId);
+                    listenTimeoutId = null;
+                }
                 voiceStatus.textContent = "Error: " + (event.error || "unknown");
             };
 
@@ -943,8 +1009,12 @@
                 listening = false;
                 voiceMicBtn.classList.remove("listening");
                 voiceMicText.textContent = "Start listening";
+                if (listenTimeoutId) {
+                    clearTimeout(listenTimeoutId);
+                    listenTimeoutId = null;
+                }
                 if (!voiceStatus.textContent.startsWith("Error")) {
-                    voiceStatus.textContent = "Finished listening.";
+                    voiceStatus.textContent = "Processing…";
                 }
             };
 
@@ -961,28 +1031,32 @@
                     return;
                 }
 
-                try {
-                    const result = eval(expr);
-                    if (!isFinite(result)) {
-                        throw new Error("Invalid");
-                    }
-                    const resultText = result.toString().includes(".")
-                        ? parseFloat(result.toFixed(10)).toString()
-                        : result.toString();
+                voiceStatus.textContent = "Processing…";
 
-                    currentExpression = expr;
-                    showResultWithExpression(expr, resultText);
-                    playEqualsSound();
-                    voiceStatus.textContent = "Done ✓";
-                } catch (e) {
-                    voiceStatus.textContent = "Could not evaluate that expression.";
-                }
+                setTimeout(() => {
+                    try {
+                        const result = eval(expr);
+                        if (!isFinite(result)) throw new Error("Invalid");
+
+                        const resultText = result.toString().includes(".")
+                            ? parseFloat(result.toFixed(10)).toString()
+                            : result.toString();
+
+                        currentExpression = expr;
+                        showResultWithExpression(expr, resultText);
+                        playEqualsSound();
+                        voiceStatus.textContent = "Done ✓";
+                    } catch (e) {
+                        voiceStatus.textContent =
+                            "Could not evaluate that expression.";
+                    }
+                }, 800);
             };
 
             voiceMicBtn.addEventListener("click", toggleListening);
         }
 
-        // Init audio on first user interaction
+        // Init audio on first user interaction (for browsers that require gesture)
         document.addEventListener("click", initAudio, { once: true });
     </script>
 </body>
