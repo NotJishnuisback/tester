@@ -204,6 +204,47 @@
                 0 0 0 2px rgba(10, 132, 255, 0.7);
         }
 
+        /* Mode tabs */
+        .mode-tabs {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.25);
+            border-radius: 999px;
+            padding: 3px;
+            margin-top: -4px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            text-align: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mode-tab.active {
+            background: #0a84ff;
+            color: #ffffff;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+        }
+
+        /* Panels */
+        .panel {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+        }
+
+        .panel.active {
+            display: flex;
+        }
+
+        /* Standard buttons panel */
         .buttons {
             flex: 1;
             display: grid;
@@ -300,6 +341,73 @@
             to   { opacity: 1;    transform: translateX(0); }
         }
 
+        /* Voice AI panel */
+        .voice-panel-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .voice-hint {
+            font-size: 0.82rem;
+            opacity: 0.8;
+        }
+
+        .voice-display {
+            background: rgba(0,0,0,0.35);
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            min-height: 52px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .voice-label {
+            opacity: 0.7;
+            font-size: 0.78rem;
+        }
+
+        .voice-text {
+            font-weight: 500;
+        }
+
+        .voice-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .voice-mic-btn {
+            flex: 0 0 auto;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: none;
+            background: linear-gradient(145deg, #0a84ff, #0060d6);
+            color: white;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.6);
+        }
+
+        .voice-mic-btn.listening {
+            background: linear-gradient(145deg, #ff3b30, #c81e14);
+        }
+
+        .voice-status {
+            flex: 1;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
         @media (max-width: 360px) {
             .calculator {
                 padding: 12px;
@@ -329,7 +437,7 @@
             }
         }
 
-        /* First-launch sound permission modal */
+        /* First-launch sound permission modal (unchanged from previous version) */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -408,7 +516,7 @@
         <div class="header-row">
             <div class="header-title">
                 <div class="header">Jishnu Calculator</div>
-                <div class="tagline">Auto-fit • v1.0</div>
+                <div class="tagline">Standard + Voice AI</div>
             </div>
 
             <div class="sound-toggle">
@@ -425,47 +533,113 @@
             <div class="result" id="result">0</div>
         </div>
 
-        <div class="buttons">
-            <button class="clear" onclick="playSound(); clearDisplay()">C</button>
-            <button class="backspace" onclick="playSound(); deleteLast()">⌫</button>
-            <button class="operator" onclick="playOperatorSound(); appendToDisplay('/')">/</button>
-            <button class="operator" onclick="playOperatorSound(); appendToDisplay('*')">×</button>
+        <!-- Mode tabs -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" id="tab-standard">Standard</button>
+            <button class="mode-tab" id="tab-voice">Voice AI</button>
+        </div>
 
-            <button onclick="playSound(); appendToDisplay('7')">7</button>
-            <button onclick="playSound(); appendToDisplay('8')">8</button>
-            <button onclick="playSound(); appendToDisplay('9')">9</button>
-            <button class="operator" onclick="playOperatorSound(); appendToDisplay('-')">-</button>
+        <!-- Standard calculator panel -->
+        <div class="panel active" id="panel-standard">
+            <div class="buttons">
+                <button class="clear" onclick="playSound(); clearDisplay()">C</button>
+                <button class="backspace" onclick="playSound(); deleteLast()">⌫</button>
+                <button class="operator" onclick="playOperatorSound(); appendToDisplay('/')">/</button>
+                <button class="operator" onclick="playOperatorSound(); appendToDisplay('*')">×</button>
 
-            <button onclick="playSound(); appendToDisplay('4')">4</button>
-            <button onclick="playSound(); appendToDisplay('5')">5</button>
-            <button onclick="playSound(); appendToDisplay('6')">6</button>
-            <button class="operator" onclick="playOperatorSound(); appendToDisplay('+')">+</button>
+                <button onclick="playSound(); appendToDisplay('7')">7</button>
+                <button onclick="playSound(); appendToDisplay('8')">8</button>
+                <button onclick="playSound(); appendToDisplay('9')">9</button>
+                <button class="operator" onclick="playOperatorSound(); appendToDisplay('-')">-</button>
 
-            <button onclick="playSound(); appendToDisplay('1')">1</button>
-            <button onclick="playSound(); appendToDisplay('2')">2</button>
-            <button onclick="playSound(); appendToDisplay('3')">3</button>
-            <button class="equals" onclick="playEqualsSound(); calculate()">=</button>
+                <button onclick="playSound(); appendToDisplay('4')">4</button>
+                <button onclick="playSound(); appendToDisplay('5')">5</button>
+                <button onclick="playSound(); appendToDisplay('6')">6</button>
+                <button class="operator" onclick="playOperatorSound(); appendToDisplay('+')">+</button>
 
-            <button class="zero" onclick="playSound(); appendToDisplay('0')">0</button>
-            <button onclick="playSound(); appendToDisplay('.')">.</button>
+                <button onclick="playSound(); appendToDisplay('1')">1</button>
+                <button onclick="playSound(); appendToDisplay('2')">2</button>
+                <button onclick="playSound(); appendToDisplay('3')">3</button>
+                <button class="equals" onclick="playEqualsSound(); calculate()">=</button>
+
+                <button class="zero" onclick="playSound(); appendToDisplay('0')">0</button>
+                <button onclick="playSound(); appendToDisplay('.')">.</button>
+            </div>
+        </div>
+
+        <!-- Voice AI calculator panel -->
+        <div class="panel" id="panel-voice">
+            <div class="voice-panel-content">
+                <div class="voice-hint">
+                    Tap the mic and say things like:
+                    “twelve plus five”, “twenty divided by four”, or “nine times three”.
+                </div>
+
+                <div class="voice-display">
+                    <div class="voice-label">Heard</div>
+                    <div class="voice-text" id="voice-raw">–</div>
+                    <div class="voice-label" style="margin-top:6px;">Expression</div>
+                    <div class="voice-text" id="voice-expression">–</div>
+                </div>
+
+                <div class="voice-actions">
+                    <button class="voice-mic-btn" id="voice-mic-btn">
+                        <span>🎤</span><span id="voice-mic-text">Start listening</span>
+                    </button>
+                    <div class="voice-status" id="voice-status">
+                        Voice calculator uses device speech recognition when available.
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const expressionEl = document.getElementById("expression");
         const resultEl = document.getElementById("result");
+
         const soundModal = document.getElementById("sound-modal");
         const soundEnableBtn = document.getElementById("sound-enable-btn");
         const soundDisableBtn = document.getElementById("sound-disable-btn");
         const soundToggleInput = document.getElementById("sound-toggle-input");
 
+        const tabStandard = document.getElementById("tab-standard");
+        const tabVoice = document.getElementById("tab-voice");
+        const panelStandard = document.getElementById("panel-standard");
+        const panelVoice = document.getElementById("panel-voice");
+
+        const voiceRawEl = document.getElementById("voice-raw");
+        const voiceExprEl = document.getElementById("voice-expression");
+        const voiceMicBtn = document.getElementById("voice-mic-btn");
+        const voiceMicText = document.getElementById("voice-mic-text");
+        const voiceStatus = document.getElementById("voice-status");
+
         let currentExpression = "0";
         let displayValue = "0";
         let hasResult = false;
         let audioContext;
-        let soundEnabled = true; // default, overridden by stored value
+        let soundEnabled = true;
 
         const SOUND_KEY = "jishnuCalcSound";
+
+        // Web Speech API / Voice
+        const SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let listening = false;
+        const speechSupported = typeof SpeechRecognition !== "undefined";
+
+        if (speechSupported) {
+            recognition = new SpeechRecognition();
+            recognition.lang = "en-US";
+            recognition.continuous = false;
+            recognition.interimResults = false;
+        } else {
+            voiceStatus.textContent =
+                "Voice recognition is not supported on this device/browser.";
+            voiceMicBtn.disabled = true;
+            voiceMicBtn.style.opacity = "0.6";
+        }
 
         function initAudio() {
             if (!soundEnabled) return;
@@ -477,7 +651,7 @@
         function playSound(frequency = 800, duration = 0.1) {
             if (!soundEnabled) return;
             if (!audioContext) initAudio();
-            if (!audioContext) return; // safety if blocked
+            if (!audioContext) return;
 
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -606,7 +780,7 @@
             }
         }
 
-        // Keyboard support (desktop / emulator)
+        // Keyboard support
         document.addEventListener("keydown", function (event) {
             const key = event.key;
             if ((key >= "0" && key <= "9") || key === ".") {
@@ -628,17 +802,19 @@
         });
 
         // ----- Sound preference handling -----
-
         function applySoundPreference(fromStorage) {
             soundToggleInput.checked = soundEnabled;
             if (!fromStorage && soundEnabled) {
-                // only initialize audio when user enables it via UI
                 document.addEventListener("click", initAudio, { once: true });
             }
         }
 
         function saveSoundPreference() {
-            localStorage.setItem(SOUND_KEY, soundEnabled ? "on" : "off");
+            try {
+                localStorage.setItem(SOUND_KEY, soundEnabled ? "on" : "off");
+            } catch (e) {
+                // ignore storage errors
+            }
         }
 
         function showSoundModal() {
@@ -649,12 +825,16 @@
             soundModal.style.display = "none";
         }
 
-        // First-load logic
         window.addEventListener("load", () => {
-            const stored = localStorage.getItem(SOUND_KEY);
+            let stored = null;
+            try {
+                stored = localStorage.getItem(SOUND_KEY);
+            } catch (e) {
+                stored = null;
+            }
+
             if (stored === null) {
-                // First time: ask user
-                soundEnabled = true; // default suggestion
+                soundEnabled = true;
                 applySoundPreference(true);
                 showSoundModal();
             } else {
@@ -687,6 +867,123 @@
                 document.addEventListener("click", initAudio, { once: true });
             }
         });
+
+        // ----- Mode switching -----
+        function setMode(mode) {
+            if (mode === "standard") {
+                tabStandard.classList.add("active");
+                tabVoice.classList.remove("active");
+                panelStandard.classList.add("active");
+                panelVoice.classList.remove("active");
+            } else {
+                tabVoice.classList.add("active");
+                tabStandard.classList.remove("active");
+                panelVoice.classList.add("active");
+                panelStandard.classList.remove("active");
+            }
+        }
+
+        tabStandard.addEventListener("click", () => setMode("standard"));
+        tabVoice.addEventListener("click", () => setMode("voice"));
+
+        // ----- Voice AI calculator -----
+        function normalizeTranscriptToExpression(text) {
+            let expr = text.toLowerCase();
+
+            expr = expr.replace(/times|into|multiply by|x/g, "*");
+            expr = expr.replace(/plus|add|addition/g, "+");
+            expr = expr.replace(/minus|subtract|subtraction/g, "-");
+            expr = expr.replace(/divided by|divide by|over/g, "/");
+
+            expr = expr.replace(/[^0-9+\-*/.() ]/g, " ");
+
+            expr = expr.replace(/\s+/g, " ").trim();
+
+            return expr;
+        }
+
+        function toggleListening() {
+            if (!speechSupported || !recognition) return;
+
+            if (!listening) {
+                try {
+                    recognition.start();
+                    listening = true;
+                    voiceMicBtn.classList.add("listening");
+                    voiceMicText.textContent = "Listening…";
+                    voiceStatus.textContent = "Speak your expression, then pause.";
+                } catch (e) {
+                    voiceStatus.textContent = "Could not start microphone.";
+                }
+            } else {
+                recognition.stop();
+            }
+        }
+
+        if (speechSupported && recognition) {
+            recognition.onstart = () => {
+                listening = true;
+                voiceMicBtn.classList.add("listening");
+                voiceMicText.textContent = "Listening…";
+                voiceStatus.textContent = "Listening…";
+            };
+
+            recognition.onspeechend = () => {
+                recognition.stop();
+            };
+
+            recognition.onerror = (event) => {
+                listening = false;
+                voiceMicBtn.classList.remove("listening");
+                voiceMicText.textContent = "Start listening";
+                voiceStatus.textContent = "Error: " + (event.error || "unknown");
+            };
+
+            recognition.onend = () => {
+                listening = false;
+                voiceMicBtn.classList.remove("listening");
+                voiceMicText.textContent = "Start listening";
+                if (!voiceStatus.textContent.startsWith("Error")) {
+                    voiceStatus.textContent = "Finished listening.";
+                }
+            };
+
+            recognition.onresult = (event) => {
+                const transcript =
+                    event.results[event.results.length - 1][0].transcript;
+                voiceRawEl.textContent = transcript;
+
+                const expr = normalizeTranscriptToExpression(transcript);
+                voiceExprEl.textContent = expr || "–";
+
+                if (!expr) {
+                    voiceStatus.textContent = "Could not detect numbers or operators.";
+                    return;
+                }
+
+                try {
+                    const result = eval(expr);
+                    if (!isFinite(result)) {
+                        throw new Error("Invalid");
+                    }
+                    const resultText = result.toString().includes(".")
+                        ? parseFloat(result.toFixed(10)).toString()
+                        : result.toString();
+
+                    currentExpression = expr;
+                    showResultWithExpression(expr, resultText);
+                    playEqualsSound();
+                    voiceStatus.textContent = "Done ✓";
+                } catch (e) {
+                    voiceStatus.textContent = "Could not evaluate that expression.";
+                }
+            };
+
+            voiceMicBtn.addEventListener("click", toggleListening);
+        }
+
+        // Init audio on first user interaction
+        document.addEventListener("click", initAudio, { once: true });
     </script>
 </body>
 </html>
