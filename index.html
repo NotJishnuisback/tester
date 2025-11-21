@@ -340,7 +340,7 @@
             to   { opacity: 1;    transform: translateX(0); }
         }
 
-        /* Voice panel layout */
+        /* Voice panel */
         .voice-panel-content {
             flex: 1;
             display: flex;
@@ -466,7 +466,7 @@
             }
         }
 
-        /* First-launch sound permission modal */
+        /* Modals: sound + language */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -523,6 +523,20 @@
             background: #0a84ff;
             color: white;
         }
+
+        /* Language modal specific */
+        .lang-select-initial {
+            width: 100%;
+            margin-top: 6px;
+            margin-bottom: 14px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.25);
+            background: #121218;
+            color: #ffffff;
+            font-size: 0.9rem;
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -537,6 +551,34 @@
             <div class="modal-actions">
                 <button class="modal-btn secondary" id="sound-disable-btn">Disable</button>
                 <button class="modal-btn primary" id="sound-enable-btn">Enable</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- First-time language selection modal -->
+    <div class="modal-backdrop" id="lang-modal">
+        <div class="modal">
+            <div class="modal-title">Choose your voice language</div>
+            <div class="modal-text">
+                Select the main language you want to use for the Voice AI calculator.
+                You can still change it later from the Voice tab.
+            </div>
+            <select id="lang-select-initial" class="lang-select-initial">
+                <option value="auto">Auto (device setting)</option>
+                <option value="en-IN">English (India)</option>
+                <option value="hi-IN">Hindi (हिन्दी)</option>
+                <option value="bn-IN">Bengali (বাংলা)</option>
+                <option value="gu-IN">Gujarati (ગુજરાતી)</option>
+                <option value="mr-IN">Marathi (मराठी)</option>
+                <option value="ta-IN">Tamil (தமிழ்)</option>
+                <option value="te-IN">Telugu (తెలుగు)</option>
+                <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
+                <option value="ml-IN">Malayalam (മലയാളം)</option>
+                <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
+                <option value="as-IN">Assamese (অসমীয়া)</option>
+            </select>
+            <div class="modal-actions">
+                <button class="modal-btn primary" id="lang-save-btn">Continue</button>
             </div>
         </div>
     </div>
@@ -601,23 +643,25 @@
             <div class="voice-panel-content">
                 <div class="voice-top-row">
                     <div class="voice-hint">
-                        Say things like: “twelve plus five”, “twenty divided by four”, or the
-                        same pattern in your own language.
+                        Say things like “twelve plus five” or the same pattern in Hindi, Bengali,
+                        Gujarati, Marathi, Tamil, Assamese, etc., depending on your selected language.
                     </div>
 
                     <div class="voice-lang-select">
                         <label for="voice-lang">Language</label>
                         <select id="voice-lang">
                             <option value="auto">Auto (device)</option>
-                            <option value="en-US">English (US)</option>
-                            <option value="en-GB">English (UK)</option>
-                            <option value="hi-IN">Hindi (India)</option>
-                            <option value="es-ES">Spanish (Spain)</option>
-                            <option value="es-MX">Spanish (Mexico)</option>
-                            <option value="fr-FR">French</option>
-                            <option value="de-DE">German</option>
-                            <option value="pt-BR">Portuguese (Brazil)</option>
-                            <option value="id-ID">Indonesian</option>
+                            <option value="en-IN">English (India)</option>
+                            <option value="hi-IN">Hindi (हिन्दी)</option>
+                            <option value="bn-IN">Bengali (বাংলা)</option>
+                            <option value="gu-IN">Gujarati (ગુજરાતી)</option>
+                            <option value="mr-IN">Marathi (मराठी)</option>
+                            <option value="ta-IN">Tamil (தமிழ்)</option>
+                            <option value="te-IN">Telugu (తెలుగు)</option>
+                            <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
+                            <option value="ml-IN">Malayalam (മലയാളം)</option>
+                            <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
+                            <option value="as-IN">Assamese (অসমীয়া)</option>
                         </select>
                     </div>
                 </div>
@@ -650,6 +694,10 @@
         const soundDisableBtn = document.getElementById("sound-disable-btn");
         const soundToggleInput = document.getElementById("sound-toggle-input");
 
+        const langModal = document.getElementById("lang-modal");
+        const langSelectInitial = document.getElementById("lang-select-initial");
+        const langSaveBtn = document.getElementById("lang-save-btn");
+
         const tabStandard = document.getElementById("tab-standard");
         const tabVoice = document.getElementById("tab-voice");
         const panelStandard = document.getElementById("panel-standard");
@@ -669,6 +717,7 @@
         let soundEnabled = true;
 
         const SOUND_KEY = "jishnuCalcSound";
+        const LANG_KEY = "jishnuCalcLang";
 
         const SpeechRecognition =
             window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -848,7 +897,7 @@
             }
         });
 
-        // ----- Sound preference handling -----
+        // ----- Sound preference -----
         function applySoundPreference(fromStorage) {
             soundToggleInput.checked = soundEnabled;
             if (!fromStorage && soundEnabled) {
@@ -870,25 +919,78 @@
             soundModal.style.display = "none";
         }
 
-        window.addEventListener("load", () => {
-            let stored = null;
+        // ----- Language preference -----
+        function applyLanguagePreference(code) {
+            if (!voiceLangSelect) return;
+            const options = Array.from(voiceLangSelect.options).map(o => o.value);
+            if (!options.includes(code)) {
+                code = "auto";
+            }
+            voiceLangSelect.value = code;
+        }
+
+        function saveLanguagePreference(code) {
             try {
-                stored = localStorage.getItem(SOUND_KEY);
+                localStorage.setItem(LANG_KEY, code);
+            } catch (e) {}
+        }
+
+        function showLangModal() {
+            langModal.style.display = "flex";
+            // Pre-select device language if it matches known codes
+            const deviceLang = (navigator.language || "en-IN").replace("_", "-");
+            const known = Array.from(langSelectInitial.options).map(o => o.value);
+            if (known.includes(deviceLang)) {
+                langSelectInitial.value = deviceLang;
+            } else if (deviceLang.startsWith("en-")) {
+                langSelectInitial.value = "en-IN";
+            } else {
+                langSelectInitial.value = "auto";
+            }
+        }
+
+        function hideLangModal() {
+            langModal.style.display = "none";
+        }
+
+        // Initial load: sound + language
+        window.addEventListener("load", () => {
+            let storedSound = null;
+            let storedLang = null;
+            try {
+                storedSound = localStorage.getItem(SOUND_KEY);
+                storedLang = localStorage.getItem(LANG_KEY);
             } catch (e) {
-                stored = null;
+                storedSound = null;
+                storedLang = null;
             }
 
-            if (stored === null) {
+            // Language: if not chosen, show modal, else apply
+            if (storedLang === null) {
+                showLangModal();
+            } else {
+                applyLanguagePreference(storedLang);
+            }
+
+            // Sound: if not chosen, suggest enable
+            if (storedSound === null) {
                 soundEnabled = true;
                 applySoundPreference(true);
                 showSoundModal();
             } else {
-                soundEnabled = stored === "on";
+                soundEnabled = storedSound === "on";
                 applySoundPreference(true);
                 if (soundEnabled) {
                     document.addEventListener("click", initAudio, { once: true });
                 }
             }
+        });
+
+        langSaveBtn.addEventListener("click", () => {
+            const chosen = langSelectInitial.value || "auto";
+            applyLanguagePreference(chosen);
+            saveLanguagePreference(chosen);
+            hideLangModal();
         });
 
         soundEnableBtn.addEventListener("click", () => {
@@ -935,7 +1037,7 @@
         function getSelectedRecognitionLang() {
             const value = voiceLangSelect ? voiceLangSelect.value : "auto";
             if (value === "auto") {
-                return navigator.language || "en-US";
+                return (navigator.language || "en-IN").replace("_", "-");
             }
             return value;
         }
@@ -943,6 +1045,8 @@
         function normalizeTranscriptToExpression(text) {
             let expr = text.toLowerCase();
 
+            // Basic English/operators mapping; for other languages, numbers/operators
+            // must be spoken in English-style words to work with this simple parser.
             expr = expr.replace(/times|into|multiply by|x/g, "*");
             expr = expr.replace(/plus|add|addition/g, "+");
             expr = expr.replace(/minus|subtract|subtraction/g, "-");
@@ -1056,7 +1160,7 @@
             voiceMicBtn.addEventListener("click", toggleListening);
         }
 
-        // Init audio on first user interaction (for browsers that require gesture)
+        // Init audio on first user interaction
         document.addEventListener("click", initAudio, { once: true });
     </script>
 </body>
