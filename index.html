@@ -1,34 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#111115">
+          content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Jishnu Calculator</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         :root {
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --safe-left: env(safe-area-inset-left, 0px);
-            --safe-right: env(safe-area-inset-right, 0px);
-
-            --bg-primary: #101016;
-            --bg-secondary: #1f1f24;
-            --bg-display: #000000;
-            --text-primary: #ffffff;
-            --text-secondary: #ffffff;
+            --bg: radial-gradient(circle at top, #1d1f2a 0, #05060b 50%, #000000 100%);
+            --panel: rgba(21, 23, 33, 0.86);
             --accent: #0a84ff;
-            --operator: #ff9500;
-            --clear: #ff3b30;
-            --shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
-            --border-radius: 18px;
-            --transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --accent-soft: #2f9bff;
+            --danger: #ff3b30;
+            --op: #ff9f0a;
+            --text-main: #ffffff;
+            --text-sub: #a8b0c5;
+            --shadow-soft: 0 24px 60px rgba(0, 0, 0, 0.85);
+            --radius-xl: 26px;
+            --radius-md: 18px;
+            --transition-fast: 0.15s cubic-bezier(0.17, 0.67, 0.47, 1);
         }
 
         html, body {
@@ -39,237 +32,234 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background:
-                radial-gradient(circle at top, #2b2b35 0, #101016 45%),
-                radial-gradient(circle at bottom, #191923 0, #101016 55%);
-            color: var(--text-primary);
-
+            background: var(--bg);
+            color: var(--text-main);
             display: flex;
+            align-items: center;
             justify-content: center;
-            align-items: stretch;
+            padding: 12px;
+        }
 
-            padding-top: calc(8px + var(--safe-top));
-            padding-bottom: calc(8px + var(--safe-bottom));
-            padding-left: calc(6px + var(--safe-left));
-            padding-right: calc(6px + var(--safe-right));
+        .calculator-shell {
+            width: 100%;
+            max-width: 420px;
+            height: min(100%, 800px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .calculator {
-            width: min(100%, 480px);
-            height: min(100%, 720px);
-            max-height: 100%;
-            margin: auto;
-
-            background: linear-gradient(145deg, #25252c, #16161c);
-            border-radius: var(--border-radius);
+            width: 100%;
+            height: 100%;
+            max-height: 780px;
+            background: linear-gradient(145deg, rgba(36,39,53,0.92), rgba(8,10,18,0.98));
+            border-radius: var(--radius-xl);
+            padding: clamp(16px, 3vh, 22px);
+            box-shadow: var(--shadow-soft);
             border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: var(--shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
 
             display: flex;
             flex-direction: column;
-            padding: clamp(14px, 3vh, 20px);
-            gap: clamp(10px, 2vh, 16px);
-
-            animation: fadeIn 0.35s ease-out;
+            gap: clamp(10px, 2vh, 18px);
+            animation: shellEnter 0.35s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px) scale(0.98); }
-            to   { opacity: 1; transform: translateY(0)   scale(1); }
+        @keyframes shellEnter {
+            from { opacity: 0; transform: translateY(18px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .header-row {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             gap: 10px;
         }
 
-        .header-title {
-            display: flex;
-            flex-direction: column;
-        }
+        .header-title { display: flex; flex-direction: column; }
 
-        .header {
+        .header-title .title {
+            font-size: clamp(1.2rem, 2.8vw, 1.5rem);
+            letter-spacing: 0.08em;
             font-weight: 600;
-            letter-spacing: 0.06em;
-            font-size: clamp(1.1rem, 2.6vw, 1.5rem);
         }
 
-        .tagline {
-            font-size: clamp(0.7rem, 1.8vw, 0.85rem);
-            opacity: 0.65;
+        .header-title .subtitle {
             margin-top: 3px;
+            font-size: clamp(0.7rem, 1.8vw, 0.86rem);
+            color: var(--text-sub);
         }
 
-        /* Sound toggle */
-        .sound-toggle {
+        .badge {
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: radial-gradient(circle at top left, #3a7cff, #2357c8);
+            box-shadow:
+                0 8px 16px rgba(26, 115, 232, 0.6),
+                0 0 0 1px rgba(255,255,255,0.16);
+            font-size: 0.78rem;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 4px 8px;
-            border-radius: 999px;
-            background: rgba(0,0,0,0.25);
-            border: 1px solid rgba(255,255,255,0.15);
-            font-size: 0.8rem;
-            white-space: nowrap;
+            gap: 4px;
         }
 
-        .sound-toggle label {
-            cursor: pointer;
-        }
-
-        .switch {
-            position: relative;
-            width: 40px;
-            height: 22px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            inset: 0;
-            background-color: #555;
-            transition: 0.2s;
-            border-radius: 999px;
-        }
-
-        .slider:before {
-            content: "";
-            position: absolute;
-            height: 16px;
-            width: 16px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.2s;
+        .badge-dot {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
+            background: #ffffff;
         }
 
-        .switch input:checked + .slider {
-            background-color: #0a84ff;
-        }
-
-        .switch input:checked + .slider:before {
-            transform: translateX(18px);
-        }
-
-        .display-container {
-            background: linear-gradient(145deg, #050508, #000000);
-            border-radius: 16px;
-            padding: clamp(10px, 1.8vh, 14px);
-            min-height: clamp(70px, 16vh, 110px);
-
+        .display {
+            background: radial-gradient(circle at top left, #14151f, #020308);
+            border-radius: 22px;
+            padding: clamp(12px, 2vh, 18px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow:
+                inset 0 1px 3px rgba(255,255,255,0.06),
+                0 14px 28px rgba(0,0,0,0.8);
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-
-            box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            min-height: clamp(78px, 18vh, 120px);
         }
 
-        .expression {
-            color: #a0a0a0;
-            font-size: clamp(0.8rem, 1.9vw, 1rem);
+        .display-expression {
             text-align: right;
+            color: rgba(205,215,240,0.7);
+            font-size: clamp(0.8rem, 1.8vw, 1rem);
             margin-bottom: 4px;
             opacity: 0;
             transform: translateY(4px);
-            transition: var(--transition);
+            transition: var(--transition-fast);
         }
 
-        .expression.show {
-            opacity: 0.95;
+        .display-expression.show {
+            opacity: 1;
             transform: translateY(0);
         }
 
-        .result {
-            color: var(--text-secondary);
-            font-variant-numeric: tabular-nums;
+        .display-result {
             text-align: right;
-            line-height: 1.15;
-            min-height: 1.2em;
-            font-size: clamp(1.8rem, 6.2vw, 2.8rem);
+            font-variant-numeric: tabular-nums;
+            font-size: clamp(1.9rem, 6.4vw, 2.7rem);
+            letter-spacing: 0.03em;
         }
 
-        .display-container:focus-within {
-            box-shadow:
-                inset 0 1px 3px rgba(255, 255, 255, 0.06),
-                0 0 0 2px rgba(10, 132, 255, 0.7);
+        .display-result.bump {
+            animation: resultBump 0.18s ease-out;
         }
 
-        /* Mode tabs */
+        @keyframes resultBump {
+            from { transform: translateX(-4px); opacity: 0.9; }
+            to   { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Mode tabs: Standard / AI Chat */
         .mode-tabs {
             display: flex;
             gap: 8px;
-            background: rgba(0,0,0,0.25);
+            background: rgba(0,0,0,0.3);
             border-radius: 999px;
             padding: 3px;
-            margin-top: -4px;
         }
 
         .mode-tab {
             flex: 1;
-            text-align: center;
-            padding: 6px 10px;
             border-radius: 999px;
-            font-size: 0.85rem;
             border: none;
             background: transparent;
             color: rgba(255,255,255,0.7);
+            padding: 6px 10px;
+            font-size: 0.82rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: var(--transition-fast);
         }
 
         .mode-tab.active {
             background: #0a84ff;
             color: #ffffff;
-            box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.7);
         }
 
         .panel {
             flex: 1;
             display: none;
             flex-direction: column;
+            min-height: 0;
         }
 
         .panel.active {
             display: flex;
         }
 
-        /* Standard panel */
+        /* Shared shell under tabs */
+        .pad-shell {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(8px, 1.6vh, 12px);
+        }
+
+        .row-top {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chip {
+            flex: 1;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: linear-gradient(145deg, #262a35, #171922);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: var(--text-sub);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* STANDARD KEYPAD */
+
         .buttons {
             flex: 1;
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            grid-template-rows: repeat(5, minmax(0, 1fr));
-            gap: clamp(8px, 1.4vh, 12px);
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: clamp(8px, 1.6vh, 12px);
             align-content: stretch;
         }
 
         button {
-            background: linear-gradient(145deg, #2c2c33, #202027);
-            color: var(--text-primary);
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            font-weight: 500;
+            border: none;
+            outline: none;
             cursor: pointer;
-            touch-action: manipulation;
+
+            border-radius: var(--radius-md);
+            background: radial-gradient(circle at top left, #343644, #171925);
+            color: var(--text-main);
+
+            font-weight: 500;
+            font-size: clamp(1rem, 3.2vw, 1.35rem);
+
+            min-height: clamp(52px, 9vh, 80px);
+
             position: relative;
+            overflow: hidden;
 
-            min-height: clamp(50px, 9vh, 68px);
-            font-size: clamp(1.05rem, 3.5vw, 1.3rem);
-
-            transition: var(--transition);
             box-shadow:
-                0 6px 16px rgba(0, 0, 0, 0.55),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+                0 10px 24px rgba(0, 0, 0, 0.9),
+                -2px -2px 4px rgba(255,255,255,0.08),
+                1px 1px 2px rgba(0,0,0,0.9);
+
+            transition:
+                transform var(--transition-fast),
+                box-shadow var(--transition-fast),
+                filter var(--transition-fast),
+                background var(--transition-fast);
         }
 
         button::after {
@@ -277,891 +267,503 @@
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            background: radial-gradient(circle at top, rgba(255,255,255,0.18), transparent 55%);
+            background: radial-gradient(circle at top, rgba(255,255,255,0.22), transparent 55%);
             opacity: 0;
             transition: opacity 0.15s ease-out;
         }
 
+        button:hover::after { opacity: 1; }
+
         button:hover {
             transform: translateY(-1px);
             box-shadow:
-                0 9px 20px rgba(0, 0, 0, 0.65),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-        }
-
-        button:hover::after {
-            opacity: 1;
+                0 14px 30px rgba(0,0,0,0.95),
+                -2px -2px 4px rgba(255,255,255,0.1),
+                0 0 0 1px rgba(255,255,255,0.06);
         }
 
         button:active {
-            transform: translateY(0);
-            filter: brightness(0.97);
+            transform: translateY(2px) scale(0.98);
             box-shadow:
-                0 3px 8px rgba(0, 0, 0, 0.5),
-                inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+                0 4px 10px rgba(0,0,0,0.9),
+                inset 0 0 0 1px rgba(255,255,255,0.08);
+            filter: brightness(0.96);
         }
 
-        .operator {
-            background: linear-gradient(145deg, #ff9f1a, #ff7a00);
-            color: var(--text-secondary);
-            border-color: rgba(0, 0, 0, 0.3);
+        .btn-clear { background: linear-gradient(145deg, #ff5b5b, #b6181a); }
+        .btn-back  { background: linear-gradient(145deg, #ffd95a, #ffb300); color: #171717; }
+        .btn-op    { background: linear-gradient(145deg, #ffb547, #ff7a00); }
+
+        .btn-equals {
+            background: linear-gradient(160deg, var(--accent-soft), #0059d1);
+            grid-column: 4 / 5;
+            grid-row: 5 / 6;
+            font-size: clamp(1.2rem, 3.4vw, 1.6rem);
         }
 
-        .equals {
-            background: linear-gradient(145deg, #0a84ff, #0060d6);
-            color: var(--text-secondary);
-            border-color: rgba(0, 0, 0, 0.3);
-            grid-column: 4;
-            grid-row: 4 / 6;
-            font-size: clamp(1.2rem, 3.8vw, 1.5rem);
+        .btn-zero {
+            grid-column: 1 / 4;
+            grid-row: 5 / 6;
         }
 
-        .zero {
-            grid-column: 1 / 3;
-            grid-row: 5;
-        }
+        /* AI CHAT PANEL */
 
-        .clear {
-            background: linear-gradient(145deg, #ff4b4b, #d62525);
-            color: var(--text-secondary);
-        }
-
-        .backspace {
-            background: linear-gradient(145deg, #ffd44f, #ffb300);
-            color: #1c1c1e;
-        }
-
-        .display-update {
-            animation: slideInDisplay 0.18s ease-out;
-        }
-
-        @keyframes slideInDisplay {
-            from { opacity: 0.85; transform: translateX(-4px); }
-            to   { opacity: 1;    transform: translateX(0); }
-        }
-
-        /* Voice panel */
-        .voice-panel-content {
+        .chat-wrapper {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .voice-top-row {
-            display: flex;
-            flex-direction: column;
             gap: 8px;
+            min-height: 0;
         }
 
-        .voice-hint {
-            font-size: 0.82rem;
-            opacity: 0.8;
+        .chat-window {
+            flex: 1;
+            background: radial-gradient(circle at top left, #191b26, #05060b);
+            border-radius: 18px;
+            padding: 10px 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow:
+                inset 0 1px 2px rgba(255,255,255,0.04),
+                0 10px 24px rgba(0,0,0,0.85);
+            overflow-y: auto;
         }
 
-        .voice-lang-select {
-            align-self: flex-start;
+        .chat-msg {
+            max-width: 85%;
+            margin-bottom: 8px;
+            padding: 8px 11px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            line-height: 1.35;
+            word-wrap: break-word;
+        }
+
+        .chat-msg.user {
+            margin-left: auto;
+            background: linear-gradient(145deg, #2f9bff, #0060d6);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+        }
+
+        .chat-msg.bot {
+            margin-right: auto;
+            background: linear-gradient(145deg, #262a35, #171922);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .chat-input-row {
             display: flex;
+            gap: 8px;
             align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
+        }
+
+        .chat-input {
+            flex: 1;
             border-radius: 999px;
-            background: rgba(0,0,0,0.25);
             border: 1px solid rgba(255,255,255,0.18);
-            font-size: 0.8rem;
-        }
-
-        .voice-lang-select label {
-            opacity: 0.8;
-        }
-
-        .voice-lang-select select {
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-size: 0.8rem;
+            background: rgba(0,0,0,0.45);
+            color: var(--text-main);
+            padding: 8px 12px;
+            font-size: 0.9rem;
             outline: none;
         }
 
-        .voice-display {
-            background: rgba(0,0,0,0.35);
-            border-radius: 14px;
-            padding: 10px 12px;
-            font-size: 0.9rem;
-            min-height: 52px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+        .chat-input::placeholder {
+            color: rgba(255,255,255,0.35);
         }
 
-        .voice-label {
-            opacity: 0.7;
-            font-size: 0.78rem;
-        }
-
-        .voice-text {
-            font-weight: 500;
-        }
-
-        .voice-actions {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 4px;
-        }
-
-        .voice-mic-btn {
-            flex: 0 0 auto;
-            padding: 10px 16px;
+        .chat-send {
             border-radius: 999px;
+            padding: 8px 14px;
             border: none;
-            background: linear-gradient(145deg, #0a84ff, #0060d6);
-            color: white;
-            font-size: 0.95rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
+            background: linear-gradient(145deg, #3ba8ff, #0059d1);
+            color: #ffffff;
+            font-size: 0.9rem;
+            white-space: nowrap;
             box-shadow: 0 8px 18px rgba(0,0,0,0.6);
-        }
-
-        .voice-mic-btn.listening {
-            background: linear-gradient(145deg, #ff3b30, #c81e14);
-        }
-
-        .voice-status {
-            flex: 1;
-            font-size: 0.8rem;
-            opacity: 0.8;
         }
 
         @media (max-width: 360px) {
             .calculator {
-                padding: 12px;
-                border-radius: 16px;
+                padding: 14px;
+                border-radius: 22px;
             }
             button {
-                min-height: 48px;
-                font-size: 1rem;
+                min-height: 50px;
+                font-size: 0.98rem;
             }
-        }
-
-        @media (orientation: landscape) and (max-height: 500px) {
-            .calculator {
-                height: 100%;
-                max-height: 100%;
-                padding: 10px;
-            }
-            .display-container {
-                min-height: 60px;
-            }
-            .result {
-                font-size: clamp(1.4rem, 4.2vw, 2.1rem);
-            }
-            button {
-                min-height: 44px;
-                font-size: clamp(0.95rem, 2.6vw, 1.1rem);
-            }
-        }
-
-        /* Modals: sound + language */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-        }
-
-        .modal {
-            background: #1c1c22;
-            border-radius: 18px;
-            padding: 16px 18px 14px;
-            width: 86%;
-            max-width: 360px;
-            box-shadow: 0 18px 40px rgba(0,0,0,0.75);
-            border: 1px solid rgba(255,255,255,0.12);
-        }
-
-        .modal-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .modal-text {
-            font-size: 0.85rem;
-            opacity: 0.8;
-            margin-bottom: 14px;
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .modal-btn {
-            border-radius: 999px;
-            padding: 6px 14px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            border: none;
-        }
-
-        .modal-btn.secondary {
-            background: transparent;
-            color: #d1d1d6;
-            border: 1px solid rgba(255,255,255,0.25);
-        }
-
-        .modal-btn.primary {
-            background: #0a84ff;
-            color: white;
-        }
-
-        /* Language modal specific */
-        .lang-select-initial {
-            width: 100%;
-            margin-top: 6px;
-            margin-bottom: 14px;
-            padding: 6px 8px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.25);
-            background: #121218;
-            color: #ffffff;
-            font-size: 0.9rem;
-            outline: none;
         }
     </style>
 </head>
 <body>
-    <!-- First-time sound permission modal -->
-    <div class="modal-backdrop" id="sound-modal">
-        <div class="modal">
-            <div class="modal-title">Enable button sound?</div>
-            <div class="modal-text">
-                Jishnu Calculator can play a subtle sound when you tap the buttons.
-                You can change this later from the sound toggle at the top.
-            </div>
-            <div class="modal-actions">
-                <button class="modal-btn secondary" id="sound-disable-btn">Disable</button>
-                <button class="modal-btn primary" id="sound-enable-btn">Enable</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- First-time language selection modal -->
-    <div class="modal-backdrop" id="lang-modal">
-        <div class="modal">
-            <div class="modal-title">Choose your voice language</div>
-            <div class="modal-text">
-                Select the main language you want to use for the Voice AI calculator.
-                You can still change it later from the Voice tab.
-            </div>
-            <select id="lang-select-initial" class="lang-select-initial">
-                <option value="auto">Auto (device setting)</option>
-                <option value="en-IN">English (India)</option>
-                <option value="hi-IN">Hindi (हिन्दी)</option>
-                <option value="bn-IN">Bengali (বাংলা)</option>
-                <option value="gu-IN">Gujarati (ગુજરાતી)</option>
-                <option value="mr-IN">Marathi (मराठी)</option>
-                <option value="ta-IN">Tamil (தமிழ்)</option>
-                <option value="te-IN">Telugu (తెలుగు)</option>
-                <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
-                <option value="ml-IN">Malayalam (മലയാളം)</option>
-                <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
-                <option value="as-IN">Assamese (অসমীয়া)</option>
-            </select>
-            <div class="modal-actions">
-                <button class="modal-btn primary" id="lang-save-btn">Continue</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="calculator">
-        <div class="header-row">
-            <div class="header-title">
-                <div class="header">Jishnu Calculator</div>
-                <div class="tagline">Standard + Voice AI</div>
+    <div class="calculator-shell">
+        <div class="calculator">
+            <div class="header-row">
+                <div class="header-title">
+                    <div class="title">Jishnu Calculator</div>
+                    <div class="subtitle">Standard · AI Math Chat</div>
+                </div>
+                <div class="badge">
+                    <span class="badge-dot"></span>
+                    <span id="mode-label">Standard</span>
+                </div>
             </div>
 
-            <div class="sound-toggle">
-                <span>Sound</span>
-                <label class="switch">
-                    <input type="checkbox" id="sound-toggle-input">
-                    <span class="slider"></span>
-                </label>
+            <div class="display" tabindex="0">
+                <div class="display-expression" id="expression"></div>
+                <div class="display-result" id="result">0</div>
             </div>
-        </div>
 
-        <div class="display-container" tabindex="0">
-            <div class="expression" id="expression"></div>
-            <div class="result" id="result">0</div>
-        </div>
-
-        <!-- Mode tabs -->
-        <div class="mode-tabs">
-            <button class="mode-tab active" id="tab-standard">Standard</button>
-            <button class="mode-tab" id="tab-voice">Voice AI</button>
-        </div>
-
-        <!-- Standard calculator panel -->
-        <div class="panel active" id="panel-standard">
-            <div class="buttons">
-                <button class="clear" onclick="playSound(); clearDisplay()">C</button>
-                <button class="backspace" onclick="playSound(); deleteLast()">⌫</button>
-                <button class="operator" onclick="playOperatorSound(); appendToDisplay('/')">/</button>
-                <button class="operator" onclick="playOperatorSound(); appendToDisplay('*')">×</button>
-
-                <button onclick="playSound(); appendToDisplay('7')">7</button>
-                <button onclick="playSound(); appendToDisplay('8')">8</button>
-                <button onclick="playSound(); appendToDisplay('9')">9</button>
-                <button class="operator" onclick="playOperatorSound(); appendToDisplay('-')">-</button>
-
-                <button onclick="playSound(); appendToDisplay('4')">4</button>
-                <button onclick="playSound(); appendToDisplay('5')">5</button>
-                <button onclick="playSound(); appendToDisplay('6')">6</button>
-                <button class="operator" onclick="playOperatorSound(); appendToDisplay('+')">+</button>
-
-                <button onclick="playSound(); appendToDisplay('1')">1</button>
-                <button onclick="playSound(); appendToDisplay('2')">2</button>
-                <button onclick="playSound(); appendToDisplay('3')">3</button>
-                <button class="equals" onclick="playEqualsSound(); calculate()">=</button>
-
-                <button class="zero" onclick="playSound(); appendToDisplay('0')">0</button>
-                <button onclick="playSound(); appendToDisplay('.')">.</button>
+            <div class="mode-tabs">
+                <button id="tab-standard" class="mode-tab active">Standard</button>
+                <button id="tab-chat" class="mode-tab">AI Chat</button>
             </div>
-        </div>
 
-        <!-- Voice AI calculator panel -->
-        <div class="panel" id="panel-voice">
-            <div class="voice-panel-content">
-                <div class="voice-top-row">
-                    <div class="voice-hint">
-                        Say things like “twelve plus five” or the same pattern in Hindi, Bengali,
-                        Gujarati, Marathi, Tamil, Assamese, etc., depending on your selected language.
+            <!-- STANDARD MODE -->
+            <div id="panel-standard" class="panel active">
+                <div class="pad-shell">
+                    <div class="row-top">
+                        <div class="chip">Tap or use keyboard 0‑9, +‑*/ and Enter</div>
                     </div>
 
-                    <div class="voice-lang-select">
-                        <label for="voice-lang">Language</label>
-                        <select id="voice-lang">
-                            <option value="auto">Auto (device)</option>
-                            <option value="en-IN">English (India)</option>
-                            <option value="hi-IN">Hindi (हिन्दी)</option>
-                            <option value="bn-IN">Bengali (বাংলা)</option>
-                            <option value="gu-IN">Gujarati (ગુજરાતી)</option>
-                            <option value="mr-IN">Marathi (मराठी)</option>
-                            <option value="ta-IN">Tamil (தமிழ்)</option>
-                            <option value="te-IN">Telugu (తెలుగు)</option>
-                            <option value="kn-IN">Kannada (ಕನ್ನಡ)</option>
-                            <option value="ml-IN">Malayalam (മലയാളം)</option>
-                            <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
-                            <option value="as-IN">Assamese (অসমীয়া)</option>
-                        </select>
-                    </div>
-                </div>
+                    <div class="buttons">
+                        <!-- Row 1 -->
+                        <button class="btn-clear" onclick="playClick(420); clearDisplay()">C</button>
+                        <button class="btn-back" onclick="playClick(520); backspace()">⌫</button>
+                        <button class="btn-op" onclick="playClick(620); appendOp('/')">÷</button>
+                        <button class="btn-op" onclick="playClick(620); appendOp('*')">×</button>
 
-                <div class="voice-display">
-                    <div class="voice-label">Heard</div>
-                    <div class="voice-text" id="voice-raw">–</div>
-                    <div class="voice-label" style="margin-top:6px;">Expression</div>
-                    <div class="voice-text" id="voice-expression">–</div>
-                </div>
+                        <!-- Row 2 -->
+                        <button onclick="playClick(); appendDigit('7')">7</button>
+                        <button onclick="playClick(); appendDigit('8')">8</button>
+                        <button onclick="playClick(); appendDigit('9')">9</button>
+                        <button class="btn-op" onclick="playClick(620); appendOp('-')">−</button>
 
-                <div class="voice-actions">
-                    <button class="voice-mic-btn" id="voice-mic-btn">
-                        <span>🎤</span><span id="voice-mic-text">Start listening</span>
-                    </button>
-                    <div class="voice-status" id="voice-status">
-                        Voice calculator listens ~3–4 seconds, then processes what you said.
+                        <!-- Row 3 -->
+                        <button onclick="playClick(); appendDigit('4')">4</button>
+                        <button onclick="playClick(); appendDigit('5')">5</button>
+                        <button onclick="playClick(); appendDigit('6')">6</button>
+                        <button class="btn-op" onclick="playClick(620); appendOp('+')">+</button>
+
+                        <!-- Row 4 -->
+                        <button onclick="playClick(); appendDigit('1')">1</button>
+                        <button onclick="playClick(); appendDigit('2')">2</button>
+                        <button onclick="playClick(); appendDigit('3')">3</button>
+                        <button onclick="playClick(); appendDot()">.</button>
+
+                        <!-- Row 5 -->
+                        <button class="btn-zero" onclick="playClick(); appendDigit('0')">0</button>
+                        <button class="btn-equals" onclick="playClick(760); calculate()">=</button>
                     </div>
                 </div>
             </div>
+
+            <!-- AI CHAT MODE -->
+            <div id="panel-chat" class="panel">
+                <div class="chat-wrapper">
+                    <div class="row-top">
+                        <div class="chip">
+                            Ask like: “what is 12 + 7?”, “30 divided by 6”, “5 into 9 minus 3”.
+                        </div>
+                    </div>
+
+                    <div id="chat-window" class="chat-window"></div>
+
+                    <div class="chat-input-row">
+                        <input id="chat-input" class="chat-input"
+                               type="text"
+                               placeholder="Type a math question…"
+                               autocomplete="off" />
+                        <button class="chat-send" id="chat-send">Send</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
+        // ==== Standard calculator logic ====
         const expressionEl = document.getElementById("expression");
         const resultEl = document.getElementById("result");
 
-        const soundModal = document.getElementById("sound-modal");
-        const soundEnableBtn = document.getElementById("sound-enable-btn");
-        const soundDisableBtn = document.getElementById("sound-disable-btn");
-        const soundToggleInput = document.getElementById("sound-toggle-input");
-
-        const langModal = document.getElementById("lang-modal");
-        const langSelectInitial = document.getElementById("lang-select-initial");
-        const langSaveBtn = document.getElementById("lang-save-btn");
-
-        const tabStandard = document.getElementById("tab-standard");
-        const tabVoice = document.getElementById("tab-voice");
-        const panelStandard = document.getElementById("panel-standard");
-        const panelVoice = document.getElementById("panel-voice");
-
-        const voiceRawEl = document.getElementById("voice-raw");
-        const voiceExprEl = document.getElementById("voice-expression");
-        const voiceMicBtn = document.getElementById("voice-mic-btn");
-        const voiceMicText = document.getElementById("voice-mic-text");
-        const voiceStatus = document.getElementById("voice-status");
-        const voiceLangSelect = document.getElementById("voice-lang");
-
-        let currentExpression = "0";
+        let currentExpression = "";
         let displayValue = "0";
         let hasResult = false;
-        let audioContext;
-        let soundEnabled = true;
 
-        const SOUND_KEY = "jishnuCalcSound";
-        const LANG_KEY = "jishnuCalcLang";
+        let audioCtx;
 
-        const SpeechRecognition =
-            window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-        let listening = false;
-        let listenTimeoutId = null;
-        const speechSupported = typeof SpeechRecognition !== "undefined";
-
-        if (speechSupported) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-        } else {
-            voiceStatus.textContent =
-                "Voice recognition is not supported on this device/browser.";
-            voiceMicBtn.disabled = true;
-            voiceMicBtn.style.opacity = "0.6";
-        }
-
-        function initAudio() {
-            if (!soundEnabled) return;
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        function ensureAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             }
         }
 
-        function playSound(frequency = 800, duration = 0.1) {
-            if (!soundEnabled) return;
-            if (!audioContext) initAudio();
-            if (!audioContext) return;
-
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            oscillator.frequency.value = frequency;
-            oscillator.type = "sine";
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(
+        function playClick(freq = 800, duration = 0.08) {
+            ensureAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            osc.type = "sine";
+            gain.gain.value = 0.28;
+            gain.gain.exponentialRampToValueAtTime(
                 0.01,
-                audioContext.currentTime + duration
+                audioCtx.currentTime + duration
             );
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + duration);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + duration);
         }
 
-        function playOperatorSound() {
-            playSound(600, 0.15);
-        }
-        function playEqualsSound() {
-            playSound(1000, 0.2);
-        }
-        function playClearSound() {
-            playSound(400, 0.1);
-        }
-
-        function updateDisplay() {
+        function updateResultDisplay() {
             resultEl.textContent = displayValue;
-            resultEl.classList.add("display-update");
-            setTimeout(() => resultEl.classList.remove("display-update"), 200);
+            resultEl.classList.remove("bump");
+            void resultEl.offsetWidth;
+            resultEl.classList.add("bump");
         }
 
-        function showResultWithExpression(calcExpression, result) {
-            expressionEl.textContent = calcExpression.replace(/×/g, "×");
+        function showExpression(expr) {
+            if (!expr) {
+                expressionEl.textContent = "";
+                expressionEl.classList.remove("show");
+                return;
+            }
+            expressionEl.textContent = expr;
             expressionEl.classList.add("show");
-            displayValue = result;
-            hasResult = true;
-            updateDisplay();
-        }
-
-        function appendToDisplay(value) {
-            if (hasResult) {
-                clearDisplay();
-            }
-            if (value === "*") {
-                currentExpression += "*";
-                displayValue += (displayValue === "0" ? "" : " ") + "×";
-                playOperatorSound();
-            } else {
-                if (
-                    displayValue === "0" &&
-                    !["+", "-", "*", "/", "×"].includes(value)
-                ) {
-                    displayValue = value;
-                    currentExpression = value;
-                } else {
-                    displayValue += value;
-                    currentExpression += value;
-                }
-                if (["+", "-", "*", "/", "×"].includes(value)) {
-                    playOperatorSound();
-                } else {
-                    playSound();
-                }
-            }
-            if (["+", "-", "*", "/", "×"].includes(value)) {
-                displayValue += " ";
-            }
-            updateDisplay();
         }
 
         function clearDisplay() {
+            currentExpression = "";
             displayValue = "0";
-            currentExpression = "0";
             hasResult = false;
-            expressionEl.classList.remove("show");
-            updateDisplay();
-            playClearSound();
+            showExpression("");
+            updateResultDisplay();
         }
 
-        function deleteLast() {
+        function backspace() {
             if (hasResult) {
                 clearDisplay();
                 return;
             }
-            if (displayValue.length > 1) {
-                displayValue = displayValue.slice(0, -1);
+            if (currentExpression.length > 0) {
                 currentExpression = currentExpression.slice(0, -1);
-                if (
-                    ["+", "-", "*", "/", "×", " "].includes(
-                        displayValue.slice(-1)
-                    )
-                ) {
-                    displayValue = displayValue.slice(0, -2);
-                    currentExpression = currentExpression.slice(0, -1);
-                }
-            } else {
-                displayValue = "0";
-                currentExpression = "0";
+                displayValue = currentExpression || "0";
+                updateResultDisplay();
             }
-            updateDisplay();
-            playSound(500, 0.08);
+        }
+
+        function appendDigit(d) {
+            if (hasResult) clearDisplay();
+            currentExpression += d;
+            displayValue = currentExpression;
+            updateResultDisplay();
+        }
+
+        function appendDot() {
+            if (hasResult) clearDisplay();
+            const parts = currentExpression.split(/[^0-9.]/);
+            const last = parts[parts.length - 1];
+            if (last.includes(".")) return;
+            if (currentExpression === "" || /[+\-*/]$/.test(currentExpression)) {
+                currentExpression += "0.";
+            } else {
+                currentExpression += ".";
+            }
+            displayValue = currentExpression;
+            updateResultDisplay();
+        }
+
+        function appendOp(op) {
+            if (currentExpression === "" && op !== "-") return;
+            if (/[+\-*/]$/.test(currentExpression)) {
+                currentExpression = currentExpression.slice(0, -1) + op;
+            } else {
+                if (hasResult) {
+                    hasResult = false;
+                    showExpression("");
+                }
+                currentExpression += op;
+            }
+            displayValue = currentExpression;
+            updateResultDisplay();
+        }
+
+        function safeEvalExpression(expr) {
+            // Only digits, operators, parentheses and dot allowed
+            if (!/^[0-9+\-*/().\s]+$/.test(expr)) {
+                throw new Error("Unsafe expression");
+            }
+            // eslint-disable-next-line no-new-func
+            return Function("return " + expr)();
         }
 
         function calculate() {
-            if (hasResult) {
-                currentExpression = displayValue;
-                hasResult = false;
-                expressionEl.classList.remove("show");
-            }
+            if (!currentExpression) return;
             try {
-                const evalExpression = currentExpression.replace(/×/g, "*");
-                let result = eval(evalExpression);
-                if (!isFinite(result)) {
-                    throw new Error("Invalid");
-                }
-                result = result.toString().includes(".")
-                    ? parseFloat(result.toFixed(10)).toString()
-                    : result.toString();
-                showResultWithExpression(currentExpression, result);
-                playEqualsSound();
-            } catch (error) {
-                resultEl.textContent = "Error";
-                playSound(200, 0.3);
-                setTimeout(clearDisplay, 1500);
+                const expr = currentExpression;
+                const value = safeEvalExpression(expr);
+                if (!isFinite(value)) throw new Error("Invalid");
+                const resultStr = value.toString().includes(".")
+                    ? parseFloat(value.toFixed(10)).toString()
+                    : value.toString();
+                showExpression(expr);
+                displayValue = resultStr;
+                currentExpression = resultStr;
+                hasResult = true;
+                updateResultDisplay();
+            } catch (e) {
+                displayValue = "Error";
+                updateResultDisplay();
+                setTimeout(clearDisplay, 1200);
             }
         }
 
-        // Keyboard support
-        document.addEventListener("keydown", function (event) {
-            const key = event.key;
-            if ((key >= "0" && key <= "9") || key === ".") {
-                appendToDisplay(key);
+        document.addEventListener("keydown", (event) => {
+            const k = event.key;
+            if (k >= "0" && k <= "9") {
+                appendDigit(k);
                 event.preventDefault();
-            } else if (["+", "-", "*", "/"].includes(key)) {
-                appendToDisplay(key);
+            } else if (k === ".") {
+                appendDot();
                 event.preventDefault();
-            } else if (key === "Enter" || key === "=") {
+            } else if (["+", "-", "*", "/"].includes(k)) {
+                appendOp(k);
+                event.preventDefault();
+            } else if (k === "Enter" || k === "=") {
                 calculate();
                 event.preventDefault();
-            } else if (key.toLowerCase() === "c" || key === "Escape") {
+            } else if (k === "Backspace") {
+                backspace();
+                event.preventDefault();
+            } else if (k === "Escape") {
                 clearDisplay();
                 event.preventDefault();
-            } else if (key === "Backspace") {
-                deleteLast();
-                event.preventDefault();
             }
         });
 
-        // ----- Sound preference -----
-        function applySoundPreference(fromStorage) {
-            soundToggleInput.checked = soundEnabled;
-            if (!fromStorage && soundEnabled) {
-                document.addEventListener("click", initAudio, { once: true });
-            }
-        }
+        document.addEventListener("click", () => ensureAudio(), { once: true });
 
-        function saveSoundPreference() {
-            try {
-                localStorage.setItem(SOUND_KEY, soundEnabled ? "on" : "off");
-            } catch (e) {}
-        }
+        // ==== Mode switching ====
+        const tabStandard = document.getElementById("tab-standard");
+        const tabChat = document.getElementById("tab-chat");
+        const panelStandard = document.getElementById("panel-standard");
+        const panelChat = document.getElementById("panel-chat");
+        const modeLabel = document.getElementById("mode-label");
 
-        function showSoundModal() {
-            soundModal.style.display = "flex";
-        }
-
-        function hideSoundModal() {
-            soundModal.style.display = "none";
-        }
-
-        // ----- Language preference -----
-        function applyLanguagePreference(code) {
-            if (!voiceLangSelect) return;
-            const options = Array.from(voiceLangSelect.options).map(o => o.value);
-            if (!options.includes(code)) {
-                code = "auto";
-            }
-            voiceLangSelect.value = code;
-        }
-
-        function saveLanguagePreference(code) {
-            try {
-                localStorage.setItem(LANG_KEY, code);
-            } catch (e) {}
-        }
-
-        function showLangModal() {
-            langModal.style.display = "flex";
-            // Pre-select device language if it matches known codes
-            const deviceLang = (navigator.language || "en-IN").replace("_", "-");
-            const known = Array.from(langSelectInitial.options).map(o => o.value);
-            if (known.includes(deviceLang)) {
-                langSelectInitial.value = deviceLang;
-            } else if (deviceLang.startsWith("en-")) {
-                langSelectInitial.value = "en-IN";
-            } else {
-                langSelectInitial.value = "auto";
-            }
-        }
-
-        function hideLangModal() {
-            langModal.style.display = "none";
-        }
-
-        // Initial load: sound + language
-        window.addEventListener("load", () => {
-            let storedSound = null;
-            let storedLang = null;
-            try {
-                storedSound = localStorage.getItem(SOUND_KEY);
-                storedLang = localStorage.getItem(LANG_KEY);
-            } catch (e) {
-                storedSound = null;
-                storedLang = null;
-            }
-
-            // Language: if not chosen, show modal, else apply
-            if (storedLang === null) {
-                showLangModal();
-            } else {
-                applyLanguagePreference(storedLang);
-            }
-
-            // Sound: if not chosen, suggest enable
-            if (storedSound === null) {
-                soundEnabled = true;
-                applySoundPreference(true);
-                showSoundModal();
-            } else {
-                soundEnabled = storedSound === "on";
-                applySoundPreference(true);
-                if (soundEnabled) {
-                    document.addEventListener("click", initAudio, { once: true });
-                }
-            }
-        });
-
-        langSaveBtn.addEventListener("click", () => {
-            const chosen = langSelectInitial.value || "auto";
-            applyLanguagePreference(chosen);
-            saveLanguagePreference(chosen);
-            hideLangModal();
-        });
-
-        soundEnableBtn.addEventListener("click", () => {
-            soundEnabled = true;
-            saveSoundPreference();
-            applySoundPreference(false);
-            hideSoundModal();
-        });
-
-        soundDisableBtn.addEventListener("click", () => {
-            soundEnabled = false;
-            saveSoundPreference();
-            applySoundPreference(false);
-            hideSoundModal();
-        });
-
-        soundToggleInput.addEventListener("change", () => {
-            soundEnabled = soundToggleInput.checked;
-            saveSoundPreference();
-            if (soundEnabled) {
-                document.addEventListener("click", initAudio, { once: true });
-            }
-        });
-
-        // ----- Mode switching -----
         function setMode(mode) {
             if (mode === "standard") {
                 tabStandard.classList.add("active");
-                tabVoice.classList.remove("active");
+                tabChat.classList.remove("active");
                 panelStandard.classList.add("active");
-                panelVoice.classList.remove("active");
+                panelChat.classList.remove("active");
+                modeLabel.textContent = "Standard";
             } else {
-                tabVoice.classList.add("active");
+                tabChat.classList.add("active");
                 tabStandard.classList.remove("active");
-                panelVoice.classList.add("active");
+                panelChat.classList.add("active");
                 panelStandard.classList.remove("active");
+                modeLabel.textContent = "AI Chat";
             }
         }
 
         tabStandard.addEventListener("click", () => setMode("standard"));
-        tabVoice.addEventListener("click", () => setMode("voice"));
+        tabChat.addEventListener("click", () => setMode("chat"));
 
-        // ----- Voice AI calculator -----
-        function getSelectedRecognitionLang() {
-            const value = voiceLangSelect ? voiceLangSelect.value : "auto";
-            if (value === "auto") {
-                return (navigator.language || "en-IN").replace("_", "-");
+        // ==== AI Chat math solver ====
+        const chatWindow = document.getElementById("chat-window");
+        const chatInput = document.getElementById("chat-input");
+        const chatSend = document.getElementById("chat-send");
+
+        function addChatBubble(text, isUser) {
+            const div = document.createElement("div");
+            div.classList.add("chat-msg");
+            div.classList.add(isUser ? "user" : "bot");
+            div.textContent = text;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function voiceTextToExpression(text) {
+            if (!text) return "";
+
+            let t = " " + text.toLowerCase() + " ";
+
+            t = t.replace(/ plus | add /g, " + ");
+            t = t.replace(/ minus | subtract /g, " - ");
+            t = t.replace(/ into | multiplied by | multiply by | times /g, " * ");
+            t = t.replace(/ divided by | divide by | over /g, " / ");
+            t = t.replace(/ point /g, ".");
+
+            t = t.replace(/ (please|equals|equal|calculate|answer|and|solve|for|is) /g, " ");
+
+            const map = {
+                " zero ": " 0 ", " one ": " 1 ", " two ": " 2 ", " three ": " 3 ", " four ": " 4 ",
+                " five ": " 5 ", " six ": " 6 ", " seven ": " 7 ", " eight ": " 8 ", " nine ": " 9 ",
+                " ten ": " 10 ", " eleven ": " 11 ", " twelve ": " 12 ", " thirteen ": " 13 ",
+                " fourteen ": " 14 ", " fifteen ": " 15 ", " sixteen ": " 16 ", " seventeen ": " 17 ",
+                " eighteen ": " 18 ", " nineteen ": " 19 ", " twenty ": " 20 ",
+                " thirty ": " 30 ", " forty ": " 40 ", " fifty ": " 50 ",
+                " sixty ": " 60 ", " seventy ": " 70 ", " eighty ": " 80 ", " ninety ": " 90 "
+            };
+            for (const [k, v] of Object.entries(map)) {
+                t = t.replace(new RegExp(k, "g"), v);
             }
-            return value;
+
+            t = t.replace(/\s+/g, " ").trim();
+
+            if (!/^[0-9+\-*/().\s]+$/.test(t)) return "";
+            return t;
         }
 
-        function normalizeTranscriptToExpression(text) {
-            let expr = text.toLowerCase();
+        function answerMathQuestion(raw) {
+            const exprFromWords = voiceTextToExpression(raw);
+            let candidate = exprFromWords;
 
-            // Basic English/operators mapping; for other languages, numbers/operators
-            // must be spoken in English-style words to work with this simple parser.
-            expr = expr.replace(/times|into|multiply by|x/g, "*");
-            expr = expr.replace(/plus|add|addition/g, "+");
-            expr = expr.replace(/minus|subtract|subtraction/g, "-");
-            expr = expr.replace(/divided by|divide by|over/g, "/");
+            if (!candidate) {
+                const match = raw.match(/[0-9+\-*/().\s]+/g);
+                if (match) candidate = match.join("").trim();
+            }
 
-            expr = expr.replace(/[^0-9+\-*/.() ]/g, " ");
+            if (!candidate) {
+                return "I couldn’t find a math expression. Try like “12 + 7” or “30 divided by 6”.";
+            }
 
-            expr = expr.replace(/\s+/g, " ").trim();
-
-            return expr;
-        }
-
-        function toggleListening() {
-            if (!speechSupported || !recognition) return;
-
-            if (!listening) {
-                try {
-                    recognition.lang = getSelectedRecognitionLang();
-                    recognition.continuous = false;
-                    recognition.interimResults = false;
-
-                    recognition.start();
-                    listening = true;
-                    voiceMicBtn.classList.add("listening");
-                    voiceMicText.textContent = "Listening…";
-                    voiceStatus.textContent = "Listening for about 3–4 seconds…";
-
-                    if (listenTimeoutId) clearTimeout(listenTimeoutId);
-                    listenTimeoutId = setTimeout(() => {
-                        try { recognition.stop(); } catch (e) {}
-                    }, 3500);
-                } catch (e) {
-                    voiceStatus.textContent = "Could not start microphone.";
-                }
-            } else {
-                try { recognition.stop(); } catch (e) {}
+            try {
+                const value = safeEvalExpression(candidate);
+                if (!isFinite(value)) throw new Error("Invalid");
+                const pretty = candidate.replace(/\*/g, "×").replace(/\//g, "÷");
+                const resultStr = value.toString().includes(".")
+                    ? parseFloat(value.toFixed(10)).toString()
+                    : value.toString();
+                return `Expression: ${pretty}\nAnswer: ${resultStr}`;
+            } catch (e) {
+                return "That expression looks invalid. Check your numbers and operators and try again.";
             }
         }
 
-        if (speechSupported && recognition) {
-            recognition.onstart = () => {
-                listening = true;
-                voiceMicBtn.classList.add("listening");
-                voiceMicText.textContent = "Listening…";
-                voiceStatus.textContent = "Listening…";
-            };
+        function handleChatSend() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            addChatBubble(text, true);
+            chatInput.value = "";
 
-            recognition.onspeechend = () => {
-                recognition.stop();
-            };
-
-            recognition.onerror = (event) => {
-                listening = false;
-                voiceMicBtn.classList.remove("listening");
-                voiceMicText.textContent = "Start listening";
-                if (listenTimeoutId) {
-                    clearTimeout(listenTimeoutId);
-                    listenTimeoutId = null;
-                }
-                voiceStatus.textContent = "Error: " + (event.error || "unknown");
-            };
-
-            recognition.onend = () => {
-                listening = false;
-                voiceMicBtn.classList.remove("listening");
-                voiceMicText.textContent = "Start listening";
-                if (listenTimeoutId) {
-                    clearTimeout(listenTimeoutId);
-                    listenTimeoutId = null;
-                }
-                if (!voiceStatus.textContent.startsWith("Error")) {
-                    voiceStatus.textContent = "Processing…";
-                }
-            };
-
-            recognition.onresult = (event) => {
-                const transcript =
-                    event.results[event.results.length - 1][0].transcript;
-                voiceRawEl.textContent = transcript;
-
-                const expr = normalizeTranscriptToExpression(transcript);
-                voiceExprEl.textContent = expr || "–";
-
-                if (!expr) {
-                    voiceStatus.textContent = "Could not detect numbers or operators.";
-                    return;
-                }
-
-                voiceStatus.textContent = "Processing…";
-
-                setTimeout(() => {
-                    try {
-                        const result = eval(expr);
-                        if (!isFinite(result)) throw new Error("Invalid");
-
-                        const resultText = result.toString().includes(".")
-                            ? parseFloat(result.toFixed(10)).toString()
-                            : result.toString();
-
-                        currentExpression = expr;
-                        showResultWithExpression(expr, resultText);
-                        playEqualsSound();
-                        voiceStatus.textContent = "Done ✓";
-                    } catch (e) {
-                        voiceStatus.textContent =
-                            "Could not evaluate that expression.";
-                    }
-                }, 800);
-            };
-
-            voiceMicBtn.addEventListener("click", toggleListening);
+            const reply = answerMathQuestion(text);
+            addChatBubble(reply, false);
         }
 
-        // Init audio on first user interaction
-        document.addEventListener("click", initAudio, { once: true });
+        chatSend.addEventListener("click", handleChatSend);
+        chatInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                handleChatSend();
+                e.preventDefault();
+            }
+        });
+
+        // Initial bot greeting
+        addChatBubble(
+            "Hi, I’m Jishnu Math AI. Ask me any basic arithmetic question like “5 + 9 × 3” or “twenty five divided by five”.",
+            false
+        );
     </script>
 </body>
 </html>
